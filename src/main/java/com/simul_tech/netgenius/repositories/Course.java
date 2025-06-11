@@ -9,15 +9,20 @@ public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(columnDefinition = "title")
     private String title;
+    @Column(columnDefinition = "description")
     private String description;
+    @Column(columnDefinition = "price")
     private Integer price;
+    @Column(columnDefinition = "duration")
     private Integer duration;
 
     @Column(name = "is_active")
     private Boolean active; // Изменено на Java-style имя
-
+    @Column(name = "created_at")
     private LocalDate created_at;
+    @Column(name = "updated_at")
     private LocalDate updated_at;
 
     @PrePersist
