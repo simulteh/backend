@@ -1,7 +1,7 @@
-package com.course_api.demo.service;
+package com.simul_tech.netgenius.services;
 
-import com.course_api.demo.repository.CourseRepository;
-import com.course_api.demo.repository.course;
+import com.simul_tech.netgenius.repositories.CourseRepository;
+import com.simul_tech.netgenius.repositories.course;
 import org.springframework.stereotype.Service;
 
 
@@ -16,15 +16,20 @@ public class CourseService {
         this.courseRepository = courseRepository;
     }
 
-    public List<course> findAll() {
+    public List<com.simul_tech.netgenius.repositories.course> findAll() {
         return courseRepository.findAll();
     }
-    public course create(course course){
+    public com.simul_tech.netgenius.repositories.course create(course course){
+
         return courseRepository.save(course);
     }
+
     public void delete(long id){
+
         Optional<course> optionalCourse = courseRepository.findById(id);
+
         if (optionalCourse.isPresent()) {
+
             throw new IllegalStateException("Course with id: " + id + " already exists");
         }
         courseRepository.deleteById(id);

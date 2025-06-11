@@ -1,4 +1,4 @@
-package com.course_api.demo.repository;
+package com.simul_tech.netgenius.repositories;
 
 import jakarta.persistence.*;
 

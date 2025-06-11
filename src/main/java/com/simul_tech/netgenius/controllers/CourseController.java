@@ -1,8 +1,8 @@
-package com.course_api.demo.controller;
+package com.simul_tech.netgenius.controllers;
 
 
-import com.course_api.demo.repository.course;
-import com.course_api.demo.service.CourseService;
+import com.simul_tech.netgenius.repositories.course;
+import com.simul_tech.netgenius.services.CourseService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
