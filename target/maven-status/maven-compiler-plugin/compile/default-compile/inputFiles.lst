@@ -1,0 +1,17 @@
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\configurators\SecurityConfig.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\configurators\SwaggerConfig.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\controllers\CourseController.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\controllers\MainController.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\controllers\SecurityController.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\impls\UserDetailsImpl.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\models\SignInRequest.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\models\SignUpRequest.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\models\User.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\NetGeniusApplication.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\repositories\course.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\repositories\CourseRepository.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\repositories\UserRepository.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\security\JwtCore.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\security\TokenFilter.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\services\CourseService.java
+C:\Users\mrlon\OneDrive\Documents\backend\src\main\java\com\simul_tech\netgenius\services\UserService.java

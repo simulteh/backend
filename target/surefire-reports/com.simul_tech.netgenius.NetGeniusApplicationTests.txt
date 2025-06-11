@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.simul_tech.netgenius.NetGeniusApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.728 s -- in com.simul_tech.netgenius.NetGeniusApplicationTests
