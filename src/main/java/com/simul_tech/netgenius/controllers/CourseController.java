@@ -40,13 +40,43 @@ public class CourseController {
         courseService.delete(id);
     }
 
-    // Эндпоинты для фильтрации
-    @GetMapping("/filter/price")
+    // Фильтрация по цене
+    @GetMapping("/filter/price/between")
     public List<CourseDTO> findByPriceBetween(
             @RequestParam Integer minPrice,
             @RequestParam Integer maxPrice) {
         return courseService.findByPriceBetween(minPrice, maxPrice);
     }
 
-    // Добавить остальные фильтры аналогично
+    @GetMapping("/filter/price/min")
+    public List<CourseDTO> findByPriceGreaterThanEqual(
+            @RequestParam Integer minPrice) {
+        return courseService.findByPriceGreaterThanEqual(minPrice);
+    }
+
+    @GetMapping("/filter/price/max")
+    public List<CourseDTO> findByPriceLessThanEqual(
+            @RequestParam Integer maxPrice) {
+        return courseService.findByPriceLessThanEqual(maxPrice);
+    }
+
+    // Фильтрация по продолжительности
+    @GetMapping("/filter/duration/min")
+    public List<CourseDTO> findByDurationGreaterThanEqual(
+            @RequestParam Integer minDuration) {
+        return courseService.findByDurationGreaterThanEqual(minDuration);
+    }
+
+    @GetMapping("/filter/duration/max")
+    public List<CourseDTO> findByDurationLessThanEqual(
+            @RequestParam Integer maxDuration) {
+        return courseService.findByDurationLessThanEqual(maxDuration);
+    }
+
+    // Фильтрация по активности
+    @GetMapping("/filter/active")
+    public List<CourseDTO> findByActive(
+            @RequestParam Boolean active) {
+        return courseService.findByActive(active);
+    }
 }

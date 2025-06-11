@@ -64,6 +64,20 @@ public class CourseService {
                 .map(CourseMapper::toDTO)
                 .collect(Collectors.toList());
     }
+    public  List<CourseDTO> findByPriceGreaterThanEqual(Integer minPrice){
+        return courseRepository.findByPriceGreaterThanEqual(minPrice).stream().map(CourseMapper::toDTO).collect(Collectors.toList());
+    }
+    public List<CourseDTO> findByPriceLessThanEqual(Integer maxPrice){
+        return courseRepository.findByPriceLessThanEqual(maxPrice).stream().map(CourseMapper::toDTO).collect(Collectors.toList());
+    }
+    public List<CourseDTO> findByDurationGreaterThanEqual(Integer minDuration){
+        return courseRepository.findByDurationGreaterThanEqual(minDuration).stream().map(CourseMapper::toDTO).collect(Collectors.toList());
+    }
+    public  List<CourseDTO> findByDurationLessThanEqual(Integer maxDuration){
+        return courseRepository.findByDurationLessThanEqual(maxDuration).stream().map(CourseMapper::toDTO).collect(Collectors.toList());
 
-    // Остальные методы фильтрации аналогично
+    }
+    public List<CourseDTO> findByActive(Boolean active){
+        return courseRepository.findByActive(active).stream().map(CourseMapper::toDTO).collect(Collectors.toList());
+    }
 }
