@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 @Entity
 @Table(name= "courses")
-public class course {
+public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,10 +13,30 @@ public class course {
     private String description;
     private Integer price;
     private Integer duration;
-    private Boolean is_active;
+
+    @Column(name = "is_active")
+    private Boolean active; // Изменено на Java-style имя
+
     private LocalDate created_at;
     private LocalDate updated_at;
 
+    @PrePersist
+    protected void onCreate() {
+        created_at = LocalDate.now();
+        updated_at = LocalDate.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updated_at = LocalDate.now();
+    }
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
     @Override
     public String toString() {
         return "course{" +
@@ -25,16 +45,16 @@ public class course {
                 ", description='" + description + '\'' +
                 ", price=" + price +
                 ", duration=" + duration +
-                ", is_active=" + is_active +
+                ", is_active=" + active +
                 ", created_at=" + created_at +
                 ", updated_at=" + updated_at +
                 '}';
     }
 
-    public course(LocalDate updated_at, LocalDate created_at, Boolean is_active, Integer duration, Integer price, String description, String title, Long id) {
+    public Course(LocalDate updated_at, LocalDate created_at, Boolean is_active, Integer duration, Integer price, String description, String title, Long id) {
         this.updated_at = updated_at;
         this.created_at = created_at;
-        this.is_active = is_active;
+        this.active = is_active;
         this.duration = duration;
         this.price = price;
         this.description = description;
@@ -42,7 +62,7 @@ public class course {
         this.id = id;
     }
 
-    public course() {
+    public Course() {
     }
 
     public Long getId() {
@@ -50,6 +70,7 @@ public class course {
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
@@ -58,6 +79,7 @@ public class course {
     }
 
     public void setTitle(String title) {
+
         this.title = title;
     }
 
@@ -66,34 +88,42 @@ public class course {
     }
 
     public void setDescription(String description) {
+
         this.description = description;
     }
 
     public Integer getPrice() {
+
         return price;
     }
 
     public void setPrice(Integer price) {
+
         this.price = price;
     }
 
     public Integer getDuration() {
+
         return duration;
     }
 
     public void setDuration(Integer duration) {
+
         this.duration = duration;
     }
 
     public Boolean getIs_active() {
-        return is_active;
+
+        return active;
     }
 
     public void setIs_active(Boolean is_active) {
-        this.is_active = is_active;
+
+        this.active = is_active;
     }
 
     public LocalDate getCreated_at() {
+
         return created_at;
     }
 
@@ -102,6 +132,7 @@ public class course {
     }
 
     public LocalDate getUpdated_at() {
+
         return updated_at;
     }
 
