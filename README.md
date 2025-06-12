@@ -33,3 +33,4 @@ backend for netgenius
 •	LaboratoryWorkDTO → LaboratoryWork (из запроса в сущность).
 Поля LaboratoryWorkDTO:
 Те же, что у LaboratoryWork, но без служебных полей (id_time, file_path).
+ 
