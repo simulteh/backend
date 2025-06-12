@@ -1,3 +1,23 @@
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 120
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ва",
+  "price": 12,
+  "duration": 73,
+  "active": true
+}
+
+<> 2025-06-12T184406.500.json
+
+###
+
 GET http://localhost:8081/api/courses
 Content-Type: application/json
 User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2

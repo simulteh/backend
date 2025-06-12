@@ -16,11 +16,11 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .servers(
                         List.of(
-                                new Server().url("http://localhost:8081")
+                                new Server().url("http://localhost:8080")
                         )
                 )
                 .info(
-                        new Info().title("Coinflow API")
+                        new Info().title("Net-Genius API")
                 );
     }
 }
