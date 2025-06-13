@@ -20,7 +20,7 @@ public class SwaggerConfig {
                         )
                 )
                 .info(
-                        new Info().title("Coinflow API")
+                        new Info().title("Net-Genius API")
                 );
     }
 }
