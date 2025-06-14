@@ -31,13 +31,19 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Security")
-@RequiredArgsConstructor
 public class SecurityController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    private final JwtCore jwtCore;
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    
+    @Autowired
+    private JwtCore jwtCore;
 
     @PostMapping("/sign-up")
     @Operation(
