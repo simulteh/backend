@@ -1,0 +1,17 @@
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\configurators\SecurityConfig.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\configurators\SwaggerConfig.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\controllers\LaboratoryWorkController.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\controllers\SecurityController.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\impls\UserDetailsImpl.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\models\LaboratoryWork.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\models\LaboratoryWorkUpdateRequest.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\models\SignInRequest.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\models\SignUpRequest.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\models\User.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\NetGeniusApplication.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\repositories\LaboratoryWorkRepository.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\repositories\UserRepository.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\security\JwtCore.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\security\TokenFilter.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\services\LaboratoryWorkService.java
+C:\Users\TREIDCOMPUTERS\Desktop\backend\src\main\java\com\simul_tech\netgenius\services\UserService.java
