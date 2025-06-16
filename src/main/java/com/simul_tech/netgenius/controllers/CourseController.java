@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,7 +70,7 @@ public class CourseController {
     )
     @PostMapping
     public CourseDTO create(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            @Valid @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "DTO курса для создания",
                     required = true,
                     content = @Content(schema = @Schema(implementation = CourseDTO.class)))

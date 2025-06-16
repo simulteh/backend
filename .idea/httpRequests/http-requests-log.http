@@ -1,5 +1,890 @@
 POST http://localhost:8081/api/courses
 Content-Type: application/json
+Content-Length: 112
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+
+  "title": "синергия",
+  "description": "да",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-16T150930.200.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 119
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "йуйуц",
+  "description": "йцуй",
+  "price": 32,
+  "duration": 23,
+  "active": false
+}
+
+<> 2025-06-16T145521.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 120
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Првиет",
+  "description": "фывф",
+  "price": 32,
+  "duration": 23,
+  "active": true
+}
+
+<> 2025-06-16T145316.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-06-16T145240.400.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 108
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-16T145140.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 111
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "dfs",
+  "description": "dsffdsf",
+  "price": 43,
+  "duration": 43,
+  "active": false
+}
+
+<> 2025-06-16T145138.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 110
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "namm6",
+  "description": "wnet",
+  "price": 43,
+  "duration": 43,
+  "active": false
+}
+
+<> 2025-06-16T145137.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-16T145134.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-16T145053.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-16T144909.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-16T144903.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-16T142506.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 108
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 2,
+  "title": "jhg",
+  "description": "fghf",
+  "price": 34,
+  "duration": 21,
+  "active": false
+}
+
+<> 2025-06-14T155431.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 110
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "namm6",
+  "description": "wnet",
+  "price": 43,
+  "duration": 43,
+  "active": false
+}
+
+<> 2025-06-14T145112.500.json
+
+###
+
+POST https://examples.http-client.intellij.net/post
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 59
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+x-http2-scheme: https
+
+id=999&value=content&fact=IntelliJ+%2B+HTTP+Client+%3D+%3C3
+
+<> 2025-06-14T144256.200.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 111
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "dfs",
+  "description": "dsffdsf",
+  "price": 43,
+  "duration": 43,
+  "active": false
+}
+
+<> 2025-06-14T144224.500.json
+
+###
+
+POST http://localhost:8081/api/courses/
+Content-Type: application/json
+Content-Length: 111
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "dfs",
+  "description": "dsffdsf",
+  "price": 43,
+  "duration": 43,
+  "active": false
+}
+
+<> 2025-06-14T144222.404.json
+
+###
+
+POST http://localhost:8081/api/courses/2
+Content-Type: application/json
+Content-Length: 111
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "dfs",
+  "description": "dsffdsf",
+  "price": 43,
+  "duration": 43,
+  "active": false
+}
+
+<> 2025-06-14T144209.405.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 128
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ываыва",
+  "price": 72,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-14T142754.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 128
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ываыва",
+  "price": 72,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-14T142752.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 128
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ываыва",
+  "price": 72,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-14T142743.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 0,
+  "title": "name",
+  "description": "name",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-14T141623.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+Content-Length: 108
+
+{
+  "id": 0,
+  "title": "name",
+  "description": "name",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-14T141006.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 108
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "name",
+  "description": "name",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-14T140941-3.500.json
+
+###
+
+DELETE http://localhost:8081/api/courses/2
+Content-Type: application/json
+Content-Length: 99
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "",
+  "description": "",
+  "price": 0,
+  "duration": 0,
+  "active": false
+}
+
+<> 2025-06-14T140941-2.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 128
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ываыва",
+  "price": 72,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-14T140941-1.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-06-14T140941.400.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 120
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ва",
+  "price": 12,
+  "duration": 73,
+  "active": true
+}
+
+<> 2025-06-14T140941.500.json
+
+###
+
+PUT http://localhost:8081/api/courses/2
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-06-14T140940-1.400.json
+
+###
+
+GET http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 111
+
+{
+  "id": 0,
+  "title": "Hello",
+  "description": "World",
+  "price": 3233,
+  "duration": 1,
+  "active": true
+}
+
+<> 2025-06-14T140940-1.200.json
+
+###
+
+GET http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 136
+
+{
+  "id": 0,
+  "title": "Обучения на Full-stack",
+  "description": "-",
+  "price": 17000,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-14T140940.200.json
+
+###
+
+POST http://localhost:8081/api/courses
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-06-14T140940.400.json
+
+###
+
+DELETE http://localhost:8081/api/users/3
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-06-14T140940-1.404.json
+
+###
+
+POST http://localhost:8081/api/users
+Content-Type: application/json
+Content-Length: 186
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "title": "Education Design",
+  "description": "Edu. in synergy",
+  "price": 12300,
+  "duration": 72,
+  "is_active": true,
+  "created_at": "2010-12-02",
+  "updated_at": "2010-12-09"
+}
+
+<> 2025-06-14T140940.404.json
+
+###
+
+GET http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 111
+
+{
+  "id": 0,
+  "title": "Hello",
+  "description": "World",
+  "price": 3233,
+  "duration": 1,
+  "active": true
+}
+
+<> 2025-06-12T221524.200.json
+
+###
+
+GET http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 111
+
+{
+  "id": 0,
+  "title": "Hello",
+  "description": "World",
+  "price": 3233,
+  "duration": 1,
+  "active": true
+}
+
+<> 2025-06-12T221523.200.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 108
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "name",
+  "description": "name",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-12T221459.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 120
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ва",
+  "price": 12,
+  "duration": 73,
+  "active": true
+}
+
+<> 2025-06-12T221442.500.json
+
+###
+
+GET http://localhost:8081/api/courses
+Content-Type: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 111
+
+{
+  "id": 0,
+  "title": "Hello",
+  "description": "World",
+  "price": 3233,
+  "duration": 1,
+  "active": true
+}
+
+<> 2025-06-12T221414.200.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 108
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "name",
+  "description": "name",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-12T221142.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 108
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "name",
+  "description": "name",
+  "price": 32,
+  "duration": 32,
+  "active": true
+}
+
+<> 2025-06-12T221131.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 128
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ываыва",
+  "price": 72,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-12T211347.500.json
+
+###
+
+DELETE http://localhost:8081/api/courses/2
+Content-Type: application/json
+Content-Length: 99
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "",
+  "description": "",
+  "price": 0,
+  "duration": 0,
+  "active": false
+}
+
+<> 2025-06-12T211343.500.json
+
+###
+
+DELETE http://localhost:8081/api/courses/2
+Content-Type: application/json
+Content-Length: 99
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "",
+  "description": "",
+  "price": 0,
+  "duration": 0,
+  "active": false
+}
+
+<> 2025-06-12T211339.500.json
+
+###
+
+DELETE http://localhost:8081/api/courses/2
+Content-Type: application/json
+Content-Length: 99
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "",
+  "description": "",
+  "price": 0,
+  "duration": 0,
+  "active": false
+}
+
+###
+
+DELETE http://localhost:8081/api/courses/2
+Content-Type: application/json
+Content-Length: 99
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "",
+  "description": "",
+  "price": 0,
+  "duration": 0,
+  "active": false
+}
+
+<> 2025-06-12T204601.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
+Content-Length: 128
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "id": 0,
+  "title": "Синергия",
+  "description": "ываыва",
+  "price": 72,
+  "duration": 72,
+  "active": true
+}
+
+<> 2025-06-12T203854.500.json
+
+###
+
+POST http://localhost:8081/api/courses
+Content-Type: application/json
 Content-Length: 120
 User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
 Accept-Encoding: br, deflate, gzip, x-gzip
@@ -45,503 +930,6 @@ Accept: */*
 content-length: 0
 
 <> 2025-06-11T213059.404.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-11T213056.404.json
-
-###
-
-PUT http://localhost:8081/api/courses/2
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T212957.400.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 111
-
-{
-  "id": 0,
-  "title": "Hello",
-  "description": "World",
-  "price": 3233,
-  "duration": 1,
-  "active": true
-}
-
-<> 2025-06-11T212956-1.500.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 136
-
-{
-  "id": 0,
-  "title": "Обучения на Full-stack",
-  "description": "-",
-  "price": 17000,
-  "duration": 72,
-  "active": true
-}
-
-<> 2025-06-11T212956.500.json
-
-###
-
-POST http://localhost:8081/api/courses
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T212956.400.json
-
-###
-
-DELETE http://localhost:8081/api/users/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T212956-1.404.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-11T212956.404.json
-
-###
-
-PUT http://localhost:8081/api/courses/2
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T212937.400.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 111
-
-{
-  "id": 0,
-  "title": "Hello",
-  "description": "World",
-  "price": 3233,
-  "duration": 1,
-  "active": true
-}
-
-<> 2025-06-11T212936-1.500.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 136
-
-{
-  "id": 0,
-  "title": "Обучения на Full-stack",
-  "description": "-",
-  "price": 17000,
-  "duration": 72,
-  "active": true
-}
-
-<> 2025-06-11T212936.500.json
-
-###
-
-POST http://localhost:8081/api/courses
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T212936.400.json
-
-###
-
-DELETE http://localhost:8081/api/users/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T212936-1.404.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-11T212936.404.json
-
-###
-
-PUT http://localhost:8081/api/courses/2
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T155014.400.json
-
-###
-
-PUT http://localhost:8081/api/courses/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T154949.400.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 111
-
-{
-  "id": 0,
-  "title": "Hello",
-  "description": "World",
-  "price": 3233,
-  "duration": 1,
-  "active": true
-}
-
-<> 2025-06-11T153344-1.500.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 136
-
-{
-  "id": 0,
-  "title": "Обучения на Full-stack",
-  "description": "-",
-  "price": 17000,
-  "duration": 72,
-  "active": true
-}
-
-<> 2025-06-11T153344.500.json
-
-###
-
-POST http://localhost:8081/api/courses
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T153344.400.json
-
-###
-
-DELETE http://localhost:8081/api/users/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T153344-1.404.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-11T153344.404.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 111
-
-{
-  "id": 0,
-  "title": "Hello",
-  "description": "World",
-  "price": 3233,
-  "duration": 1,
-  "active": true
-}
-
-<> 2025-06-11T153319.500.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 136
-
-{
-  "id": 0,
-  "title": "Обучения на Full-stack",
-  "description": "-",
-  "price": 17000,
-  "duration": 72,
-  "active": true
-}
-
-<> 2025-06-11T152319.500.json
-
-###
-
-POST http://localhost:8081/api/courses
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T152319.400.json
-
-###
-
-DELETE http://localhost:8081/api/users/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T152319-1.404.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-11T152319.404.json
-
-###
-
-GET http://localhost:8081/api/courses
-Content-Type: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 136
-
-{
-  "id": 0,
-  "title": "Обучения на Full-stack",
-  "description": "-",
-  "price": 17000,
-  "duration": 72,
-  "active": true
-}
-
-<> 2025-06-11T152236.500.json
-
-###
-
-POST http://localhost:8081/api/courses
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T152236.400.json
-
-###
-
-DELETE http://localhost:8081/api/users/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-06-11T152236.404.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-11T152235.404.json
-
-###
-
-DELETE http://localhost:8081/api/users/3
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 186
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-10T191859.200.json
-
-###
-
-POST http://localhost:8081/api/users
-Content-Type: application/json
-Content-Length: 197
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.2
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "id": 0,
-  "title": "Education Design",
-  "description": "Edu. in synergy",
-  "price": 12300,
-  "duration": 72,
-  "is_active": true,
-  "created_at": "2010-12-02",
-  "updated_at": "2010-12-09"
-}
-
-<> 2025-06-10T191752.500.json
 
 ###
 

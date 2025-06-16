@@ -9,13 +9,13 @@ public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(columnDefinition = "title")
+    @Column(name = "title")
     private String title;
-    @Column(columnDefinition = "description")
+    @Column(name = "description")
     private String description;
-    @Column(columnDefinition = "price")
+    @Column(name = "price")
     private Integer price;
-    @Column(columnDefinition = "duration")
+    @Column(name = "duration")
     private Integer duration;
 
     @Column(name = "is_active")
@@ -45,7 +45,6 @@ public class Course {
     @Override
     public String toString() {
         return "course{" +
-                "id=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", price=" + price +
@@ -117,15 +116,6 @@ public class Course {
         this.duration = duration;
     }
 
-    public Boolean getIs_active() {
-
-        return active;
-    }
-
-    public void setIs_active(Boolean is_active) {
-
-        this.active = is_active;
-    }
 
     public LocalDate getCreated_at() {
 

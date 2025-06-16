@@ -7,7 +7,6 @@ public class CourseMapper {
 
     public static CourseDTO toDTO(Course entity) {
         CourseDTO dto = new CourseDTO();
-        dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
         dto.setPrice(entity.getPrice());
@@ -18,7 +17,6 @@ public class CourseMapper {
 
     public static Course toEntity(CourseDTO dto) {
         Course entity = new Course();
-        entity.setId(dto.getId());
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
         entity.setPrice(dto.getPrice());
