@@ -11,19 +11,19 @@ public class TaskResponseDTO {
     private String статус;
     private LocalDateTime датаСоздания;
     private LocalDateTime датаОкончания;
-    private boolean is_done;
+    private boolean isDone;
 
     public TaskResponseDTO() {
     }
 
-    public TaskResponseDTO(UUID id, String название, String описание, String статус, LocalDateTime датаСоздания, LocalDateTime датаОкончания, boolean is_done) {
+    public TaskResponseDTO(UUID id, String название, String описание, String статус, LocalDateTime датаСоздания, LocalDateTime датаОкончания, boolean isDone) {
         this.id = id;
         this.название = название;
         this.описание = описание;
         this.статус = статус;
         this.датаСоздания = датаСоздания;
         this.датаОкончания = датаОкончания;
-        this.is_done = is_done;
+        this.isDone = isDone;
     }
 
     public UUID getId() {
@@ -50,35 +50,35 @@ public class TaskResponseDTO {
         this.описание = описание;
     }
 
-    public String getСтатус() {
+    public String getStatus() {
         return статус;
     }
 
-    public void setСтатус(String статус) {
+    public void setStatus(String статус) {
         this.статус = статус;
     }
 
-    public LocalDateTime getДатаСоздания() {
+    public LocalDateTime getDataSozdaniya() {
         return датаСоздания;
     }
 
-    public void setДатаСоздания(LocalDateTime датаСоздания) {
+    public void setDataSozdaniya(LocalDateTime датаСоздания) {
         this.датаСоздания = датаСоздания;
     }
 
-    public LocalDateTime getДатаОкончания() {
+    public LocalDateTime getDataOkonchaniya() {
         return датаОкончания;
     }
 
-    public void setДатаОкончания(LocalDateTime датаОкончания) {
+    public void setDataOkonchaniya(LocalDateTime датаОкончания) {
         this.датаОкончания = датаОкончания;
     }
 
-    public boolean getIs_done() {
-        return is_done;
+    public boolean isIsDone() {
+        return isDone;
     }
 
-    public void setIs_done(boolean is_done) {
-        this.is_done = is_done;
+    public void setIsDone(boolean isDone) {
+        this.isDone = isDone;
     }
 } 

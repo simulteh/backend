@@ -27,18 +27,18 @@ public class Task {
     private LocalDateTime датаОкончания;
 
     @Column(nullable = false)
-    private boolean is_done;
+    private boolean isDone;
 
     public Task() {
     }
 
-    public Task(String название, String описание, String статус, LocalDateTime датаСоздания, LocalDateTime датаОкончания, boolean is_done) {
+    public Task(String название, String описание, String статус, LocalDateTime датаСоздания, LocalDateTime датаОкончания, boolean isDone) {
         this.название = название;
         this.описание = описание;
         this.статус = статус;
         this.датаСоздания = датаСоздания;
         this.датаОкончания = датаОкончания;
-        this.is_done = is_done;
+        this.isDone = isDone;
     }
 
     public UUID getId() {
@@ -89,12 +89,12 @@ public class Task {
         this.датаОкончания = датаОкончания;
     }
 
-    public boolean isIs_done() {
-        return is_done;
+    public boolean isIsDone() {
+        return isDone;
     }
 
-    public void setIs_done(boolean is_done) {
-        this.is_done = is_done;
+    public void setIsDone(boolean isDone) {
+        this.isDone = isDone;
     }
 
     @PrePersist

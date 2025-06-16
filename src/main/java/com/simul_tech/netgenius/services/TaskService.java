@@ -41,7 +41,7 @@ public class TaskService {
         }
         if (isDone != null) {
             tasks = tasks.stream()
-                         .filter(t -> t.isIs_done() == isDone)
+                         .filter(t -> t.isIsDone() == isDone)
                          .collect(Collectors.toList());
         }
         if (createdAfter != null) {
@@ -80,9 +80,9 @@ public class TaskService {
         Task task = new Task();
         task.setNazvanie(taskRequestDTO.getNazvanie());
         task.setOpisanie(taskRequestDTO.getOpisanie());
-        task.setStatus(taskRequestDTO.getСтатус());
-        task.setDataOkonchaniya(taskRequestDTO.getДатаОкончания());
-        task.setIs_done(taskRequestDTO.getIs_done());
+        task.setStatus(taskRequestDTO.getStatus());
+        task.setDataOkonchaniya(taskRequestDTO.getDataOkonchaniya());
+        task.setIsDone(taskRequestDTO.isIsDone());
 
         Task savedTask = taskRepository.save(task);
         return convertToDTO(savedTask);
@@ -94,9 +94,9 @@ public class TaskService {
 
         task.setNazvanie(taskRequestDTO.getNazvanie());
         task.setOpisanie(taskRequestDTO.getOpisanie());
-        task.setStatus(taskRequestDTO.getСтатус());
-        task.setDataOkonchaniya(taskRequestDTO.getДатаОкончания());
-        task.setIs_done(taskRequestDTO.getIs_done());
+        task.setStatus(taskRequestDTO.getStatus());
+        task.setDataOkonchaniya(taskRequestDTO.getDataOkonchaniya());
+        task.setIsDone(taskRequestDTO.isIsDone());
 
         Task updatedTask = taskRepository.save(task);
         return convertToDTO(updatedTask);
@@ -117,7 +117,7 @@ public class TaskService {
             task.getStatus(),
             task.getDataSozdaniya(),
             task.getDataOkonchaniya(),
-            task.isIs_done()
+            task.isIsDone()
         );
     }
 } 

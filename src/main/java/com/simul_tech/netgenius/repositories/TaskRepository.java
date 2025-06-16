@@ -13,6 +13,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findByСтатус(String статус);
     List<Task> findByДатаСозданияBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
     List<Task> findByДатаОкончанияBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
-    List<Task> findByIs_done(boolean is_done);
-    List<Task> findByСтатусAndIs_done(String статус, boolean is_done);
+    List<Task> findByIsDone(boolean isDone);
+    List<Task> findByСтатусAndIsDone(String статус, boolean isDone);
 }
