@@ -1,6 +1,0 @@
-{
-  "timestamp": "2025-06-12T15:44:06.479+00:00",
-  "status": 500,
-  "error": "Internal Server Error",
-  "path": "/api/courses"
-}
