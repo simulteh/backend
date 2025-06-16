@@ -5,6 +5,7 @@ import com.simul_tech.netgenius.dto.TaskResponseDTO;
 import com.simul_tech.netgenius.services.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,10 +27,10 @@ public class TaskController {
     @GetMapping
     public ResponseEntity<List<TaskResponseDTO>> getAllTasks(
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) LocalDateTime createdAfter,
-            @RequestParam(required = false) LocalDateTime createdBefore,
-            @RequestParam(required = false) LocalDateTime dueAfter,
-            @RequestParam(required = false) LocalDateTime dueBefore,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdBefore,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dueAfter,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dueBefore,
             @RequestParam(required = false) Boolean isDone) {
         return ResponseEntity.ok(taskService.getAllTasks(status, createdAfter, createdBefore, dueAfter, dueBefore, isDone));
     }
