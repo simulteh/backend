@@ -91,6 +91,12 @@ public class LaboratoryWorkService {
             throw new RuntimeException("Invalid file type");
         }
 
+        // Check if user has reached the 20 files limit
+        List<LaboratoryWork> userWorks = laboratoryWorkRepository.findAllByIdUser(userId);
+        if (userWorks.size() >= 20) {
+            throw new RuntimeException("Maximum number of files (20) reached for this user");
+        }
+
         // Generate unique filename
         String fileName = UUID.randomUUID().toString() + "." + fileType;
         Path filePath = Paths.get(uploadDir + fileName);

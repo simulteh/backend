@@ -5,63 +5,109 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "laboratory_works")
-@Data
-@Schema(description = "Лабораторная работа")
+@Schema(
+    name = "LaboratoryWork",
+    description = "Сущность лабораторной работы. " +
+                 "Содержит все поля, включая служебные (id_time, file_path). " +
+                 "Используется для хранения данных в базе данных."
+)
 public class LaboratoryWork {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "Уникальный идентификатор работы")
+    @Schema(
+        description = "Уникальный идентификатор работы",
+        example = "1",
+        required = true
+    )
     private Long id_work;
 
-    @Column(name = "id_user")
-    @Schema(description = "Идентификатор отправителя (студента)")
+    @Schema(
+        description = "Идентификатор студента, выполнившего работу",
+        example = "123",
+        required = true
+    )
     private Long id_user;
 
-    @Column(name = "id_recipient")
-    @Schema(description = "Идентификатор получателя (преподавателя)")
+    @Schema(
+        description = "Идентификатор преподавателя, проверяющего работу",
+        example = "456",
+        required = true
+    )
     private Long id_recipient;
 
-    @Column(name = "id_departure")
-    @Schema(description = "Идентификатор отправленного сообщения")
+    @Schema(
+        description = "Идентификатор отправки (для внутреннего использования)",
+        example = "789"
+    )
     private String id_departure;
 
-    @Column(name = "id_time")
-    @Schema(description = "Дата и время отправки")
+    @Schema(
+        description = "Временная метка создания/обновления работы",
+        example = "2024-03-20T10:30:00",
+        required = true
+    )
     private LocalDateTime id_time;
 
-    @Column(name = "file_name")
-    @Schema(description = "Название файла")
+    @Schema(
+        description = "Имя загруженного файла",
+        example = "lab_work_1.pdf",
+        required = true
+    )
     private String file_name;
 
-    @Column(name = "file_path")
-    @Schema(description = "Путь к файлу в хранилище")
-    private String file_path;
-
-    @Column(name = "file_size")
-    @Schema(description = "Размер файла в МБ")
+    @Schema(
+        description = "Размер файла в байтах",
+        example = "1048576",
+        required = true
+    )
     private Double file_size;
 
-    @Column(name = "file_type")
-    @Schema(description = "Тип файла (pdf, doc, xlsx, txt, png, jpeg)")
+    @Schema(
+        description = "Тип загруженного файла",
+        example = "pdf",
+        allowableValues = {"pdf", "doc", "docx", "xlsx", "txt", "png", "jpeg", "jpg"},
+        required = true
+    )
     private String file_type;
 
-    @Column(name = "comment", length = 1000)
-    @Schema(description = "Комментарий студента (макс. 1000 символов)")
+    @Schema(
+        description = "Путь к файлу в системе хранения",
+        example = "/uploads/works/2024/03/20/lab_work_1.pdf",
+        required = true
+    )
+    private String file_path;
+
+    @Schema(
+        description = "Комментарий к работе (максимум 1000 символов)",
+        example = "Лабораторная работа по теме 'Сети и телекоммуникации'",
+        maxLength = 1000
+    )
     private String comment;
 
-    @Column(name = "status")
-    @Schema(description = "Статус работы (completed, in_progress, graded)")
+    @Schema(
+        description = "Статус работы: completed (выполнена), in_progress (в процессе), graded (оценена)",
+        example = "completed",
+        required = true
+    )
     private String status;
 
-    @Column(name = "grade")
-    @Schema(description = "Оценка за работу")
+    @Schema(
+        description = "Оценка за работу (от 0 до 100)",
+        example = "85",
+        minimum = "0",
+        maximum = "100"
+    )
     private Integer grade;
 
-    @Column(name = "is_closed")
-    @Schema(description = "Флаг закрытия комментариев")
-    private Boolean is_closed = false;
+    @Schema(
+        description = "Флаг, указывающий закрыты ли комментарии к работе",
+        example = "false",
+        defaultValue = "false"
+    )
+    private Boolean is_closed;
 
     @PrePersist
     protected void onCreate() {
