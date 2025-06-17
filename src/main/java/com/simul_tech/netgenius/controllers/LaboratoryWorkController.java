@@ -2,6 +2,7 @@ package com.simul_tech.netgenius.controllers;
 
 import com.simul_tech.netgenius.models.LaboratoryWork;
 import com.simul_tech.netgenius.models.LaboratoryWorkUpdateRequest;
+import com.simul_tech.netgenius.models.LaboratoryWorkDto;
 import com.simul_tech.netgenius.services.LaboratoryWorkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,12 +38,17 @@ public class LaboratoryWorkController {
             @ApiResponse(responseCode = "403", description = "Нет доступа")
         }
     )
-    public ResponseEntity<List<LaboratoryWork>> getAllWorks(
+    public ResponseEntity<List<LaboratoryWorkDto>> getAllWorks(
         @Parameter(description = "Статус работы") @RequestParam(required = false) String status,
         @Parameter(description = "Дата начала") @RequestParam(required = false) String startDate,
-        @Parameter(description = "Дата окончания") @RequestParam(required = false) String endDate
+        @Parameter(description = "Дата окончания") @RequestParam(required = false) String endDate,
+        @Parameter(description = "ID студента") @RequestParam(required = false) Long idUser,
+        @Parameter(description = "ID преподавателя") @RequestParam(required = false) Long idRecipient,
+        @Parameter(description = "Тип файла") @RequestParam(required = false) String fileType,
+        @Parameter(description = "Оценка") @RequestParam(required = false) Integer grade,
+        @Parameter(description = "Закрыта ли работа") @RequestParam(required = false) Boolean isClosed
     ) {
-        return ResponseEntity.ok(laboratoryWorkService.getAllWorks(status, startDate, endDate));
+        return ResponseEntity.ok(laboratoryWorkService.getAllWorksDto(status, startDate, endDate, idUser, idRecipient, fileType, grade, isClosed));
     }
 
     @GetMapping("/{id_work}")

@@ -13,6 +13,9 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import com.simul_tech.netgenius.models.LaboratoryWorkDto;
+import com.simul_tech.netgenius.models.LaboratoryWorkMapper;
 
 @Service
 public class LaboratoryWorkService {
@@ -33,16 +36,34 @@ public class LaboratoryWorkService {
         }
     }
 
-    public List<LaboratoryWork> getAllWorks(String status, String startDate, String endDate) {
-        if (status != null) {
-            return laboratoryWorkRepository.findByStatus(status);
-        }
-        if (startDate != null && endDate != null) {
-            LocalDateTime start = LocalDateTime.parse(startDate);
-            LocalDateTime end = LocalDateTime.parse(endDate);
-            return laboratoryWorkRepository.findByIdTimeBetween(start, end);
-        }
-        return laboratoryWorkRepository.findAll();
+    public List<LaboratoryWork> getAllWorks(String status, String startDate, String endDate, Long idUser, Long idRecipient, String fileType, Integer grade, Boolean isClosed) {
+        List<LaboratoryWork> works = laboratoryWorkRepository.findAll();
+        return works.stream()
+                .filter(w -> status == null || status.equals(w.getStatus()))
+                .filter(w -> idUser == null || idUser.equals(w.getId_user()))
+                .filter(w -> idRecipient == null || idRecipient.equals(w.getId_recipient()))
+                .filter(w -> fileType == null || fileType.equalsIgnoreCase(w.getFile_type()))
+                .filter(w -> grade == null || grade.equals(w.getGrade()))
+                .filter(w -> isClosed == null || isClosed.equals(w.getIs_closed()))
+                .filter(w -> {
+                    if (startDate == null && endDate == null) return true;
+                    if (w.getId_time() == null) return false;
+                    if (startDate != null && endDate != null) {
+                        return !w.getId_time().isBefore(java.time.LocalDateTime.parse(startDate)) && !w.getId_time().isAfter(java.time.LocalDateTime.parse(endDate));
+                    } else if (startDate != null) {
+                        return !w.getId_time().isBefore(java.time.LocalDateTime.parse(startDate));
+                    } else {
+                        return !w.getId_time().isAfter(java.time.LocalDateTime.parse(endDate));
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<LaboratoryWorkDto> getAllWorksDto(String status, String startDate, String endDate, Long idUser, Long idRecipient, String fileType, Integer grade, Boolean isClosed) {
+        return getAllWorks(status, startDate, endDate, idUser, idRecipient, fileType, grade, isClosed)
+                .stream()
+                .map(LaboratoryWorkMapper::toDto)
+                .toList();
     }
 
     public LaboratoryWork getWorkById(Long id) {
