@@ -11,11 +11,11 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
                         .title("Achievement System API")
-                        .version("1.0")
+                        .version("1.0.0")
                         .description("API для управления системой достижений")
                         .contact(new Contact()
                                 .name("Development Team")
