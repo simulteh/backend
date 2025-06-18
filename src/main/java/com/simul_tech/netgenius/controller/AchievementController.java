@@ -1,8 +1,8 @@
-package com.simul_tech.net_genius.controller;
+package com.simul_tech.netgenius.controller;
 
-import com.simul_tech.net_genius.dto.AchievementDTO;
-import com.simul_tech.net_genius.model.Achievement;
-import com.simul_tech.net_genius.service.AchievementService;
+import com.simul_tech.netgenius.dto.AchievementDTO;
+import com.simul_tech.netgenius.model.Achievement;
+import com.simul_tech.netgenius.service.AchievementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

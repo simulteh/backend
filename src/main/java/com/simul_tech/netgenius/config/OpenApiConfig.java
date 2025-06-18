@@ -1,4 +1,4 @@
-package com.simul_tech.net_genius.config;
+package com.simul_tech.netgenius.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

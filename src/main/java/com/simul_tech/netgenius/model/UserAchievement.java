@@ -1,4 +1,4 @@
-package com.simul_tech.net_genius.model;
+package com.simul_tech.netgenius.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
