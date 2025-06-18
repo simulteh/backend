@@ -1,7 +1,7 @@
 package com.simul_tech.netgenius.services;
 
 import com.simul_tech.netgenius.impls.UserDetailsImpl;
-import com.simul_tech.netgenius.models.User;
+import com.simul_tech.netgenius.entities.User;
 import com.simul_tech.netgenius.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +21,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findUserByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
                 String.format("User '%s' not found", username)
         ));
 

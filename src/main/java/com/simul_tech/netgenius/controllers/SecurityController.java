@@ -2,7 +2,7 @@ package com.simul_tech.netgenius.controllers;
 
 import com.simul_tech.netgenius.models.SignInRequest;
 import com.simul_tech.netgenius.models.SignUpRequest;
-import com.simul_tech.netgenius.models.User;
+import com.simul_tech.netgenius.entities.User;
 import com.simul_tech.netgenius.repositories.UserRepository;
 import com.simul_tech.netgenius.security.JwtCore;
 import io.swagger.v3.oas.annotations.Operation;

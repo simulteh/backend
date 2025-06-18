@@ -1,6 +1,6 @@
 package com.simul_tech.netgenius.impls;
 
-import com.simul_tech.netgenius.models.User;
+import com.simul_tech.netgenius.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
