@@ -41,27 +41,27 @@ public class TaskService {
         }
         if (isDone != null) {
             tasks = tasks.stream()
-                         .filter(t -> t.isIsDone() == isDone)
+                         .filter(t -> t.getIsDone() == isDone)
                          .collect(Collectors.toList());
         }
         if (createdAfter != null) {
             tasks = tasks.stream()
-                         .filter(t -> t.getDataSozdaniya() != null && !t.getDataSozdaniya().isBefore(createdAfter))
+                         .filter(t -> t.getCreationDate() != null && !t.getCreationDate().isBefore(createdAfter))
                          .collect(Collectors.toList());
         }
         if (createdBefore != null) {
             tasks = tasks.stream()
-                         .filter(t -> t.getDataSozdaniya() != null && !t.getDataSozdaniya().isAfter(createdBefore))
+                         .filter(t -> t.getCreationDate() != null && !t.getCreationDate().isAfter(createdBefore))
                          .collect(Collectors.toList());
         }
         if (dueAfter != null) {
             tasks = tasks.stream()
-                         .filter(t -> t.getDataOkonchaniya() != null && !t.getDataOkonchaniya().isBefore(dueAfter))
+                         .filter(t -> t.getDueDate() != null && !t.getDueDate().isBefore(dueAfter))
                          .collect(Collectors.toList());
         }
         if (dueBefore != null) {
             tasks = tasks.stream()
-                         .filter(t -> t.getDataOkonchaniya() != null && !t.getDataOkonchaniya().isAfter(dueBefore))
+                         .filter(t -> t.getDueDate() != null && !t.getDueDate().isAfter(dueBefore))
                          .collect(Collectors.toList());
         }
 
@@ -72,17 +72,17 @@ public class TaskService {
 
     public TaskResponseDTO getTaskById(UUID id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Задание с ID " + id + " не найдено"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task with ID " + id + " not found"));
         return convertToDTO(task);
     }
 
     public TaskResponseDTO createTask(TaskRequestDTO taskRequestDTO) {
         Task task = new Task();
-        task.setNazvanie(taskRequestDTO.getNazvanie());
-        task.setOpisanie(taskRequestDTO.getOpisanie());
+        task.setName(taskRequestDTO.getName());
+        task.setDescription(taskRequestDTO.getDescription());
         task.setStatus(taskRequestDTO.getStatus());
-        task.setDataOkonchaniya(taskRequestDTO.getDataOkonchaniya());
-        task.setIsDone(taskRequestDTO.isIsDone());
+        task.setDueDate(taskRequestDTO.getDueDate());
+        task.setIsDone(taskRequestDTO.getIsDone());
 
         Task savedTask = taskRepository.save(task);
         return convertToDTO(savedTask);
@@ -90,13 +90,13 @@ public class TaskService {
 
     public TaskResponseDTO updateTask(UUID id, TaskRequestDTO taskRequestDTO) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Задание с ID " + id + " не найдено"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Task with ID " + id + " not found"));
 
-        task.setNazvanie(taskRequestDTO.getNazvanie());
-        task.setOpisanie(taskRequestDTO.getOpisanie());
+        task.setName(taskRequestDTO.getName());
+        task.setDescription(taskRequestDTO.getDescription());
         task.setStatus(taskRequestDTO.getStatus());
-        task.setDataOkonchaniya(taskRequestDTO.getDataOkonchaniya());
-        task.setIsDone(taskRequestDTO.isIsDone());
+        task.setDueDate(taskRequestDTO.getDueDate());
+        task.setIsDone(taskRequestDTO.getIsDone());
 
         Task updatedTask = taskRepository.save(task);
         return convertToDTO(updatedTask);
@@ -104,7 +104,7 @@ public class TaskService {
 
     public void deleteTask(UUID id) {
         if (!taskRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Задание с ID " + id + " не найдено для удаления");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task with ID " + id + " not found for deletion");
         }
         taskRepository.deleteById(id);
     }
@@ -112,12 +112,12 @@ public class TaskService {
     private TaskResponseDTO convertToDTO(Task task) {
         return new TaskResponseDTO(
             task.getId(),
-            task.getNazvanie(),
-            task.getOpisanie(),
+            task.getName(),
+            task.getDescription(),
             task.getStatus(),
-            task.getDataSozdaniya(),
-            task.getDataOkonchaniya(),
-            task.isIsDone()
+            task.getCreationDate(),
+            task.getDueDate(),
+            task.getIsDone()
         );
     }
 } 

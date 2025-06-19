@@ -2,69 +2,77 @@ package com.simul_tech.netgenius.dto;
 
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 
 public class TaskRequestDTO {
 
-    @NotBlank(message = "Название задачи не может быть пустым")
-    private String название;
+    @Schema(description = "Task name", example = "Sample task", required = true)
+    @NotBlank(message = "Task name must not be blank")
+    private String name;
 
-    private String описание;
+    @Schema(description = "Task description", example = "Task description", required = false)
+    private String description;
 
-    @NotBlank(message = "Статус задачи не может быть пустым")
-    private String статус;
+    @Schema(description = "Task status", example = "new", required = true)
+    @NotBlank(message = "Task status must not be blank")
+    private String status;
 
-    private LocalDateTime датаОкончания;
+    @Schema(description = "Task due date (ISO)", example = "2024-06-20T12:00:00", required = false)
+    private LocalDateTime dueDate;
 
-    private boolean isDone;
+    @Schema(description = "Is task done", example = "false", required = true)
+    @NotNull(message = "isDone is required")
+    private Boolean isDone;
 
     public TaskRequestDTO() {
     }
 
-    public TaskRequestDTO(String название, String описание, String статус, LocalDateTime датаОкончания, boolean isDone) {
-        this.название = название;
-        this.описание = описание;
-        this.статус = статус;
-        this.датаОкончания = датаОкончания;
+    public TaskRequestDTO(String name, String description, String status, LocalDateTime dueDate, boolean isDone) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.dueDate = dueDate;
         this.isDone = isDone;
     }
 
-    public String getNazvanie() {
-        return название;
+    public String getName() {
+        return name;
     }
 
-    public void setNazvanie(String название) {
-        this.название = название;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getOpisanie() {
-        return описание;
+    public String getDescription() {
+        return description;
     }
 
-    public void setOpisanie(String описание) {
-        this.описание = описание;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getStatus() {
-        return статус;
+        return status;
     }
 
-    public void setStatus(String статус) {
-        this.статус = статус;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public LocalDateTime getDataOkonchaniya() {
-        return датаОкончания;
+    public LocalDateTime getDueDate() {
+        return dueDate;
     }
 
-    public void setDataOkonchaniya(LocalDateTime датаОкончания) {
-        this.датаОкончания = датаОкончания;
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 
-    public boolean isIsDone() {
+    public Boolean getIsDone() {
         return isDone;
     }
 
-    public void setIsDone(boolean isDone) {
+    public void setIsDone(Boolean isDone) {
         this.isDone = isDone;
     }
 } 

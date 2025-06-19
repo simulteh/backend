@@ -10,9 +10,9 @@ import java.util.UUID;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID> {
-    List<Task> findByСтатус(String статус);
-    List<Task> findByДатаСозданияBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
-    List<Task> findByДатаОкончанияBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<Task> findByStatus(String status);
+    List<Task> findByCreationDateBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
+    List<Task> findByDueDateBetween(LocalDateTime startDateTime, LocalDateTime endDateTime);
     List<Task> findByIsDone(boolean isDone);
-    List<Task> findByСтатусAndIsDone(String статус, boolean isDone);
+    List<Task> findByStatusAndIsDone(String status, boolean isDone);
 }

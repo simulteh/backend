@@ -9,35 +9,36 @@ import java.util.UUID;
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private String название;
+    @Column(nullable = false, name = "name")
+    private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String описание;
+    @Column(columnDefinition = "TEXT", name = "description")
+    private String description;
 
-    @Column(nullable = false)
-    private String статус;
+    @Column(nullable = false, name = "status")
+    private String status;
 
-    @Column(nullable = false)
-    private LocalDateTime датаСоздания;
+    @Column(nullable = false, name = "creation_date")
+    private LocalDateTime creationDate;
 
-    private LocalDateTime датаОкончания;
+    @Column(name = "due_date")
+    private LocalDateTime dueDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_done")
     private boolean isDone;
 
     public Task() {
     }
 
-    public Task(String название, String описание, String статус, LocalDateTime датаСоздания, LocalDateTime датаОкончания, boolean isDone) {
-        this.название = название;
-        this.описание = описание;
-        this.статус = статус;
-        this.датаСоздания = датаСоздания;
-        this.датаОкончания = датаОкончания;
+    public Task(String name, String description, String status, LocalDateTime creationDate, LocalDateTime dueDate, boolean isDone) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.creationDate = creationDate;
+        this.dueDate = dueDate;
         this.isDone = isDone;
     }
 
@@ -49,47 +50,47 @@ public class Task {
         this.id = id;
     }
 
-    public String getNazvanie() {
-        return название;
+    public String getName() {
+        return name;
     }
 
-    public void setNazvanie(String название) {
-        this.название = название;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getOpisanie() {
-        return описание;
+    public String getDescription() {
+        return description;
     }
 
-    public void setOpisanie(String описание) {
-        this.описание = описание;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getStatus() {
-        return статус;
+        return status;
     }
 
-    public void setStatus(String статус) {
-        this.статус = статус;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public LocalDateTime getDataSozdaniya() {
-        return датаСоздания;
+    public LocalDateTime getCreationDate() {
+        return creationDate;
     }
 
-    public void setDataSozdaniya(LocalDateTime датаСоздания) {
-        this.датаСоздания = датаСоздания;
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
     }
 
-    public LocalDateTime getDataOkonchaniya() {
-        return датаОкончания;
+    public LocalDateTime getDueDate() {
+        return dueDate;
     }
 
-    public void setDataOkonchaniya(LocalDateTime датаОкончания) {
-        this.датаОкончания = датаОкончания;
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 
-    public boolean isIsDone() {
+    public boolean getIsDone() {
         return isDone;
     }
 
@@ -99,11 +100,8 @@ public class Task {
 
     @PrePersist
     protected void onCreate() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
-        if (датаСоздания == null) {
-            датаСоздания = LocalDateTime.now();
+        if (creationDate == null) {
+            creationDate = LocalDateTime.now();
         }
     }
 }

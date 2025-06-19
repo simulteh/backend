@@ -2,27 +2,35 @@ package com.simul_tech.netgenius.dto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class TaskResponseDTO {
 
+    @Schema(description = "Task UUID", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;
-    private String название;
-    private String описание;
-    private String статус;
-    private LocalDateTime датаСоздания;
-    private LocalDateTime датаОкончания;
+    @Schema(description = "Task name", example = "Sample task")
+    private String name;
+    @Schema(description = "Task description", example = "Task description")
+    private String description;
+    @Schema(description = "Task status", example = "new")
+    private String status;
+    @Schema(description = "Task creation date (ISO)", example = "2024-06-19T10:00:00")
+    private LocalDateTime creationDate;
+    @Schema(description = "Task due date (ISO)", example = "2024-06-20T12:00:00")
+    private LocalDateTime dueDate;
+    @Schema(description = "Is task done", example = "false")
     private boolean isDone;
 
     public TaskResponseDTO() {
     }
 
-    public TaskResponseDTO(UUID id, String название, String описание, String статус, LocalDateTime датаСоздания, LocalDateTime датаОкончания, boolean isDone) {
+    public TaskResponseDTO(UUID id, String name, String description, String status, LocalDateTime creationDate, LocalDateTime dueDate, boolean isDone) {
         this.id = id;
-        this.название = название;
-        this.описание = описание;
-        this.статус = статус;
-        this.датаСоздания = датаСоздания;
-        this.датаОкончания = датаОкончания;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.creationDate = creationDate;
+        this.dueDate = dueDate;
         this.isDone = isDone;
     }
 
@@ -34,47 +42,47 @@ public class TaskResponseDTO {
         this.id = id;
     }
 
-    public String getNazvanie() {
-        return название;
+    public String getName() {
+        return name;
     }
 
-    public void setNazvanie(String название) {
-        this.название = название;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getOpisanie() {
-        return описание;
+    public String getDescription() {
+        return description;
     }
 
-    public void setOpisanie(String описание) {
-        this.описание = описание;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getStatus() {
-        return статус;
+        return status;
     }
 
-    public void setStatus(String статус) {
-        this.статус = статус;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public LocalDateTime getDataSozdaniya() {
-        return датаСоздания;
+    public LocalDateTime getCreationDate() {
+        return creationDate;
     }
 
-    public void setDataSozdaniya(LocalDateTime датаСоздания) {
-        this.датаСоздания = датаСоздания;
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
     }
 
-    public LocalDateTime getDataOkonchaniya() {
-        return датаОкончания;
+    public LocalDateTime getDueDate() {
+        return dueDate;
     }
 
-    public void setDataOkonchaniya(LocalDateTime датаОкончания) {
-        this.датаОкончания = датаОкончания;
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 
-    public boolean isIsDone() {
+    public boolean getIsDone() {
         return isDone;
     }
 
