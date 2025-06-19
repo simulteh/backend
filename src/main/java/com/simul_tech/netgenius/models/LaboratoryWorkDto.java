@@ -2,7 +2,6 @@ package com.simul_tech.netgenius.models;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import java.time.LocalDateTime;
 
 /**
  * DTO для лабораторной работы, используется для возврата данных клиенту.
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
     name = "LaboratoryWorkDto",
     description = "DTO для лабораторной работы. " +
                  "Содержит все необходимые поля для отображения информации о работе, " +
-                 "исключая служебные поля (id_time, file_path)."
+                 "исключая служебные поля (idTime, filePath)."
 )
 public class LaboratoryWorkDto {
     @Schema(
@@ -20,21 +19,21 @@ public class LaboratoryWorkDto {
         example = "1",
         required = true
     )
-    private Long id_work;
+    private Long idWork;
 
     @Schema(
         description = "Идентификатор студента, выполнившего работу",
         example = "123",
         required = true
     )
-    private Long id_user;
+    private Long idUser;
 
     @Schema(
         description = "Идентификатор преподавателя, проверяющего работу",
         example = "456",
         required = true
     )
-    private Long id_recipient;
+    private Long idRecipient;
 
     @Schema(
         description = "Статус работы: completed (выполнена), in_progress (в процессе), graded (оценена)",

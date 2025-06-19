@@ -40,20 +40,20 @@ public class LaboratoryWorkService {
         List<LaboratoryWork> works = laboratoryWorkRepository.findAll();
         return works.stream()
                 .filter(w -> status == null || status.equals(w.getStatus()))
-                .filter(w -> idUser == null || idUser.equals(w.getId_user()))
-                .filter(w -> idRecipient == null || idRecipient.equals(w.getId_recipient()))
-                .filter(w -> fileType == null || fileType.equalsIgnoreCase(w.getFile_type()))
+                .filter(w -> idUser == null || idUser.equals(w.getIdUser()))
+                .filter(w -> idRecipient == null || idRecipient.equals(w.getIdRecipient()))
+                .filter(w -> fileType == null || fileType.equalsIgnoreCase(w.getFileType()))
                 .filter(w -> grade == null || grade.equals(w.getGrade()))
-                .filter(w -> isClosed == null || isClosed.equals(w.getIs_closed()))
+                .filter(w -> isClosed == null || isClosed.equals(w.getIsClosed()))
                 .filter(w -> {
                     if (startDate == null && endDate == null) return true;
-                    if (w.getId_time() == null) return false;
+                    if (w.getIdTime() == null) return false;
                     if (startDate != null && endDate != null) {
-                        return !w.getId_time().isBefore(java.time.LocalDateTime.parse(startDate)) && !w.getId_time().isAfter(java.time.LocalDateTime.parse(endDate));
+                        return !w.getIdTime().isBefore(java.time.LocalDateTime.parse(startDate)) && !w.getIdTime().isAfter(java.time.LocalDateTime.parse(endDate));
                     } else if (startDate != null) {
-                        return !w.getId_time().isBefore(java.time.LocalDateTime.parse(startDate));
+                        return !w.getIdTime().isBefore(java.time.LocalDateTime.parse(startDate));
                     } else {
-                        return !w.getId_time().isAfter(java.time.LocalDateTime.parse(endDate));
+                        return !w.getIdTime().isAfter(java.time.LocalDateTime.parse(endDate));
                     }
                 })
                 .collect(Collectors.toList());
@@ -103,16 +103,16 @@ public class LaboratoryWorkService {
         Files.copy(file.getInputStream(), filePath);
 
         LaboratoryWork work = new LaboratoryWork();
-        work.setId_user(userId);
-        work.setId_recipient(recipientId);
-        work.setId_departure(UUID.randomUUID().toString());
-        work.setFile_name(file.getOriginalFilename());
-        work.setFile_path(filePath.toString());
-        work.setFile_size(file.getSize() / (1024.0 * 1024.0)); // Convert to MB
-        work.setFile_type(fileType);
+        work.setIdUser(userId);
+        work.setIdRecipient(recipientId);
+        work.setIdDeparture(UUID.randomUUID().toString());
+        work.setFileName(file.getOriginalFilename());
+        work.setFilePath(filePath.toString());
+        work.setFileSize(file.getSize() / (1024.0 * 1024.0)); // Convert to MB
+        work.setFileType(fileType);
         work.setComment(comment);
         work.setStatus("in_progress");
-        work.setIs_closed(false);
+        work.setIsClosed(false);
 
         return laboratoryWorkRepository.save(work);
     }
@@ -127,7 +127,7 @@ public class LaboratoryWorkService {
             work.setGrade(updateRequest.getGrade());
         }
         if (updateRequest.getIsClosed() != null) {
-            work.setIs_closed(updateRequest.getIsClosed());
+            work.setIsClosed(updateRequest.getIsClosed());
         }
 
         return laboratoryWorkRepository.save(work);
@@ -136,7 +136,7 @@ public class LaboratoryWorkService {
     public void deleteWork(Long id) {
         LaboratoryWork work = getWorkById(id);
         try {
-            Files.deleteIfExists(Paths.get(work.getFile_path()));
+            Files.deleteIfExists(Paths.get(work.getFilePath()));
         } catch (IOException e) {
             throw new RuntimeException("Failed to delete file", e);
         }
@@ -147,7 +147,7 @@ public class LaboratoryWorkService {
         List<LaboratoryWork> works = laboratoryWorkRepository.findAllByIdUser(userId);
         for (LaboratoryWork work : works) {
             try {
-                Files.deleteIfExists(Paths.get(work.getFile_path()));
+                Files.deleteIfExists(Paths.get(work.getFilePath()));
             } catch (IOException e) {
                 throw new RuntimeException("Failed to delete file", e);
             }
