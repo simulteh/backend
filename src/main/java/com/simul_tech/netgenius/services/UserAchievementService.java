@@ -1,12 +1,12 @@
-package com.simul_tech.netgenius.service;
+package com.simul_tech.netgenius.services;
 
-import com.simul_tech.netgenius.dto.AchievementDTO;
-import com.simul_tech.netgenius.dto.UserAchievementDTO;
+import com.simul_tech.netgenius.dtos.AchievementDTO;
+import com.simul_tech.netgenius.dtos.UserAchievementDTO;
 import com.simul_tech.netgenius.mapper.AchievementMapper;
-import com.simul_tech.netgenius.model.Achievement;
-import com.simul_tech.netgenius.model.UserAchievement;
-import com.simul_tech.netgenius.repository.AchievementRepository;
-import com.simul_tech.netgenius.repository.UserAchievementRepository;
+import com.simul_tech.netgenius.models.Achievement;
+import com.simul_tech.netgenius.models.UserAchievement;
+import com.simul_tech.netgenius.repositories.AchievementRepository;
+import com.simul_tech.netgenius.repositories.UserAchievementRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

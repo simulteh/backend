@@ -1,4 +1,4 @@
-package com.simul_tech.netgenius.dto;
+package com.simul_tech.netgenius.dtos;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

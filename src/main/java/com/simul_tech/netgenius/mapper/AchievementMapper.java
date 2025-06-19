@@ -1,7 +1,7 @@
 package com.simul_tech.netgenius.mapper;
 
-import com.simul_tech.netgenius.dto.AchievementDTO;
-import com.simul_tech.netgenius.model.Achievement;
+import com.simul_tech.netgenius.dtos.AchievementDTO;
+import com.simul_tech.netgenius.models.Achievement;
 import org.springframework.stereotype.Component;
 
 @Component

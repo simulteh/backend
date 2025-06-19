@@ -1,6 +1,6 @@
-package com.simul_tech.netgenius.repository;
+package com.simul_tech.netgenius.repositories;
 
-import com.simul_tech.netgenius.model.UserAchievement;
+import com.simul_tech.netgenius.models.UserAchievement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
