@@ -4,30 +4,44 @@ import com.simul_tech.netgenius.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 
-
+/**
+ * Реализация UserDetails для интеграции с Spring Security
+ * Используется в системе аутентификации модуля управления студентами
+ */
 @Data
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
+    private static final String DEFAULT_ROLE = "ROLE_USER";
+
     private Long id;
     private String username;
     private String email;
     private String password;
+    private boolean active;
 
+    /**
+     * Создает UserDetailsImpl на основе сущности User
+     * @param user сущность пользователя из базы данных
+     * @return объект UserDetailsImpl
+     */
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getPassword());
+                user.getPassword(),
+                user.isActive());
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE));
     }
 
     @Override
@@ -37,7 +51,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return active;
     }
 
     @Override
@@ -47,6 +61,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 }

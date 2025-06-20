@@ -1,36 +1,72 @@
 package com.simul_tech.netgenius.security;
 
 import com.simul_tech.netgenius.impls.UserDetailsImpl;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import io.jsonwebtoken.*;
 
 import java.util.Date;
 
 @Component
 public class JwtCore {
-    @Value("${testing.app.secret}")
-    private String secret;
 
-    @Value("${testing.app.lifetime}")
-    private int lifetime;
+    @Value("${student.app.jwtSecret}")
+    private String jwtSecret;
 
+    @Value("${student.app.jwtExpirationMs}")
+    private int jwtExpirationMs;
+
+    /**
+     * Генерирует JWT токен для аутентифицированного пользователя
+     * @param authentication объект аутентификации Spring Security
+     * @return JWT токен
+     */
     public String generateToken(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl)authentication.getPrincipal();
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
         return Jwts.builder()
-                .setSubject((userDetails.getUsername()))
+                .setSubject(userPrincipal.getUsername())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + lifetime))
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
-    public String getNameFromJwt(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(secret)
+    /**
+     * Извлекает имя пользователя из JWT токена
+     * @param token JWT токен
+     * @return имя пользователя
+     * @throws JwtException если токен невалиден
+     */
+    public String getUsernameFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
                 .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
+                .getBody()
+                .getSubject();
+    }
+
+    /**
+     * Проверяет валидность JWT токена
+     * @param token JWT токен
+     * @return true если токен валиден, false в противном случае
+     */
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+            return true;
+        } catch (SignatureException e) {
+            // Неверная подпись
+        } catch (MalformedJwtException e) {
+            // Невалидный токен
+        } catch (ExpiredJwtException e) {
+            // Токен просрочен
+        } catch (UnsupportedJwtException e) {
+            // Неподдерживаемый токен
+        } catch (IllegalArgumentException e) {
+            // Пустой токен
+        }
+        return false;
     }
 }

@@ -34,6 +34,11 @@ public class SecurityConfig {
         this.tokenFilter = tokenFilter;
     }
 
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -65,9 +70,21 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorize -> authorize
+                        // Разрешаем доступ к аутентификации всем
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/secured/**").fullyAuthenticated()
-                        .anyRequest().permitAll()
+
+                        // Настройка доступа к API студентов
+                        .requestMatchers("/api/students/**").authenticated()
+
+                        // Разрешаем доступ к Swagger без аутентификации
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // Все остальные запросы требуют аутентификации
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
 

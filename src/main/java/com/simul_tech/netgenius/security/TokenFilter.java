@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,48 +19,70 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-public class TokenFilter extends OncePerRequestFilter {
+@Slf4j
+public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final String AUTH_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final JwtCore jwtCore;
     private final UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String jwt = null;
-        String username = null;
-        UserDetails userDetails;
-        UsernamePasswordAuthenticationToken auth;
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
         try {
-            String headerAuth = request.getHeader("Authorization");
-            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-                jwt = headerAuth.substring(7);
-            }
-            if (jwt != null) {
-                try {
-                    username = jwtCore.getNameFromJwt(jwt);
-                    System.out.println("Username from JWT: " + username);
-                } catch (ExpiredJwtException e) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
-                    return;
-                } catch (Exception e) {
-                    System.out.println("Error while parsing JWT: " + e.getMessage());
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                    return;
-                }
+            String jwt = extractJwtFromRequest(request);
+
+            if (jwt != null && jwtCore.validateToken(jwt)) {
+                String username = jwtCore.getUsernameFromToken(jwt);
+
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    userDetails = userDetailsService.loadUserByUsername(username);
-                    auth = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    System.out.println("Authentication set for user: " + username);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    setAuthenticationInContext(userDetails);
+                    log.debug("Установлена аутентификация для пользователя: {}", username);
                 }
             }
+
+            filterChain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            log.warn("Срок действия токена истек: {}", e.getMessage());
+            sendErrorResponse(response, "Token expired", HttpServletResponse.SC_UNAUTHORIZED);
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-            return;
+            log.error("Ошибка аутентификации: {}", e.getMessage());
+            sendErrorResponse(response, "Unauthorized", HttpServletResponse.SC_UNAUTHORIZED);
         }
-        filterChain.doFilter(request, response);
+    }
+
+    private String extractJwtFromRequest(HttpServletRequest request) {
+        String header = request.getHeader(AUTH_HEADER);
+        if (header != null && header.startsWith(BEARER_PREFIX)) {
+            String jwt = header.substring(BEARER_PREFIX.length());
+            log.debug("Извлечен JWT токен из запроса");
+            return jwt;
+        }
+        return null;
+    }
+
+    private void setAuthenticationInContext(UserDetails userDetails) {
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, String message, int status) throws IOException {
+        response.setContentType("application/json");
+        response.setStatus(status);
+        response.getWriter().write(String.format(
+                "{\"status\": \"error\", \"message\": \"%s\"}",
+                message
+        ));
     }
 }
