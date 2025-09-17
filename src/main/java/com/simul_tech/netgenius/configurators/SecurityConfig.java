@@ -1,6 +1,7 @@
 package com.simul_tech.netgenius.configurators;
 
 import com.simul_tech.netgenius.security.TokenFilter;
+
 import com.simul_tech.netgenius.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,8 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private TokenFilter tokenFilter;
-    private UserService userService;
-
-    @Autowired
-    public void setTokenFilter(TokenFilter tokenFilter) {
-        this.tokenFilter = tokenFilter;
-    }
+    private final TokenFilter tokenFilter;
+    private final UserService userService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -44,9 +40,12 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    @Bean
     @Primary
     public AuthenticationManagerBuilder configureAuthenticationManagerBuilder(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(userService).passwordEncoder(passwordEncoder());
+        authenticationManagerBuilder.
+                userDetailsService(userService).
+                passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder;
     }
 

@@ -26,7 +26,7 @@ public class JwtCore {
                 .compact();
     }
 
-    public String getNameFromJwt(String token) {
+    public String getEmailFromJwt(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(secret)
                 .parseClaimsJws(token)

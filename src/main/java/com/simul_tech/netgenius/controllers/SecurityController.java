@@ -46,24 +46,24 @@ public class SecurityController {
                     "Если имя пользователя или email уже существуют, возвращает ошибку",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Успешная регистрация пользователя"),
-                    @ApiResponse(responseCode = "400", description = "Ошибка: имя пользователя или email уже существуют")
+                    @ApiResponse(responseCode = "400", description = "Ошибка: пользователь с таким email уже существует"),
+                    @ApiResponse(responseCode = "500", description = "Ошибка на стороне сервера")
             }
     )
     ResponseEntity<?> signup(@RequestBody SignUpRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different name");
-        }
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Choose different email");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Пользователь с таким email уже существует");
         }
         String hashed = passwordEncoder.encode(signupRequest.getPassword());
 
         User user = new User();
-        user.setUsername(signupRequest.getUsername());
+        user.setFirstName(signupRequest.getFirstName());
+        user.setLastName(signupRequest.getLastName());
+        user.setMiddleName(signupRequest.getMiddleName());
         user.setEmail(signupRequest.getEmail());
         user.setPassword(hashed);
         userRepository.save(user);
-        return ResponseEntity.ok("Success");
+        return ResponseEntity.ok("Пользователь зарегистрирован");
     }
 
     @PostMapping("/sign-in")
@@ -72,14 +72,18 @@ public class SecurityController {
             description = "Проверяет учетные данные пользователя и возвращает JWT токен, если авторизация успешна " +
                     "Возвращает статус 401, если учетные данные неверны",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Успешная авторизация, возвращает JWT токен"),
-                    @ApiResponse(responseCode = "401", description = "Ошибка: неверные учетные данные")
+                    @ApiResponse(responseCode = "200", description = "Авторизация прошла успешна, выдан JWT токен"),
+                    @ApiResponse(responseCode = "401", description = "Ошибка: неверные учетные данные"),
+                    @ApiResponse(responseCode = "500", description = "Ошибка на стороне сервера")
             }
     )
     ResponseEntity<?> signin(@RequestBody SignInRequest signinRequest) {
         Authentication authentication = null;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signinRequest.getUsername(), signinRequest.getPassword()));
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            signinRequest.getEmail(),
+                            signinRequest.getPassword()));
         } catch (BadCredentialsException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
