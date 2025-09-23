@@ -26,7 +26,7 @@ public class SwaggerConfig {
                                         .url("http://212.67.12.82:" + serverPort)
                                         .description("Продакшн сервер"),
                                 new Server()
-                                        .url("http://212.67.12.82/api")
+                                        .url("http://net-genius.ru/api")
                                         .description("Через nginx прокси")
                         )
                 )
