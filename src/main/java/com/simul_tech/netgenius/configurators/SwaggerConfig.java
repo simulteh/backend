@@ -19,12 +19,22 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .servers(
                         List.of(
-                                new Server().url("http://localhost:" + serverPort),
-                                new Server().url("http:212.67.12.82:" + serverPort)
+                                new Server()
+                                        .url("http://localhost:" + serverPort)
+                                        .description("Локальный сервер"),
+                                new Server()
+                                        .url("http://212.67.12.82:" + serverPort)
+                                        .description("Продакшн сервер"),
+                                new Server()
+                                        .url("http://212.67.12.82/api")
+                                        .description("Через nginx прокси")
                         )
                 )
                 .info(
-                        new Info().title("Net-Genius API")
+                        new Info()
+                                .title("Net-Genius API")
+                                .description("API для системы Net-Genius")
+                                .version("1.0.0")
                 );
     }
 }
