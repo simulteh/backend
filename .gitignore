@@ -38,3 +38,7 @@ build/
 logs/
 *.log
 .m2
+
+# Docker
+docker-compose.yml
+Dockerfile
