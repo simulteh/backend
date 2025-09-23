@@ -37,6 +37,11 @@ public class SecurityController {
     private final AuthenticationManager authenticationManager;
     private final JwtCore jwtCore;
 
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
+    }
+
     @PostMapping("/sign-up")
     @Operation(
             summary = "Регистрация нового пользователя",
