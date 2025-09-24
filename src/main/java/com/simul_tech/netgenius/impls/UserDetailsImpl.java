@@ -16,7 +16,7 @@ import java.util.Collections;
 public class UserDetailsImpl implements UserDetails {
     private Integer id;
     private String firstName;
-    private String secondName;
+    private String lastName;
     private String middleName;
     private String email;
     private String password;
