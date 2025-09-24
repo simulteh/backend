@@ -1,12 +1,11 @@
 package com.simul_tech.netgenius.controllers;
 
-import com.simul_tech.netgenius.models.SignInRequest;
-import com.simul_tech.netgenius.models.SignUpRequest;
+import com.simul_tech.netgenius.dto.SignInRequest;
+import com.simul_tech.netgenius.dto.SignUpRequest;
 import com.simul_tech.netgenius.models.User;
 import com.simul_tech.netgenius.repositories.UserRepository;
 import com.simul_tech.netgenius.security.JwtCore;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,9 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
