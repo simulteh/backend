@@ -12,12 +12,14 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/profile")
 @Tag(name = "Profile controller", description = "API для личного кабинета")
 @RequiredArgsConstructor
+
 public class ProfileController {
     private final JwtCore jwtCore;
     private final UserService userService;
@@ -33,22 +36,8 @@ public class ProfileController {
     @GetMapping("/me")
     @Operation(
             summary = "Получить информацию о пользователе по jwt-токену",
-            description = "Принимает на вход токен и возвращает данные пользователя",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "JWT-токен пользователя",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    name = "Пример запроса",
-                                    value = """
-                                            {
-                                                "token": "ivanov@example.com",
-                                            }
-                                            """
-                            )
-                    )
-            ),
+            description = "Читает JWT-токен из заголовка Authorization (Bearer) и возвращает данные пользователя",
+            security = {@SecurityRequirement(name = "bearerAuth")},
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -76,8 +65,15 @@ public class ProfileController {
                     )
             }
     )
-    public ResponseEntity<?> getInfo(@RequestBody String token) throws UsernameNotFoundException {
-        String email = jwtCore.getEmailFromJwt(token);
+        public ResponseEntity<?> getInfo(HttpServletRequest request) throws UsernameNotFoundException {
+                String authorizationHeader = request.getHeader("Authorization");
+    
+                if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
+                }
+    
+                String token = authorizationHeader.substring(7);
+                String email = jwtCore.getEmailFromJwt(token);
         try {
             UserDetailsImpl userDetails = (UserDetailsImpl) userService.loadUserByUsername(email);
             ProfileResponse profileResponse = new ProfileResponse(
