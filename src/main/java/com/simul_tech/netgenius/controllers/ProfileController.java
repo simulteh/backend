@@ -1,6 +1,7 @@
 package com.simul_tech.netgenius.controllers;
 
 import com.simul_tech.netgenius.dto.ProfileResponse;
+import com.simul_tech.netgenius.dto.SignInRequest;
 import com.simul_tech.netgenius.dto.SignUpRequest;
 import com.simul_tech.netgenius.impls.UserDetailsImpl;
 import com.simul_tech.netgenius.security.JwtCore;
@@ -33,6 +34,21 @@ public class ProfileController {
     @Operation(
             summary = "Получить информацию о пользователе по jwt-токену",
             description = "Принимает на вход токен и возвращает данные пользователя",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "JWT-токен пользователя",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "Пример запроса",
+                                    value = """
+                                            {
+                                                "token": "ivanov@example.com",
+                                            }
+                                            """
+                            )
+                    )
+            ),
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -60,7 +76,7 @@ public class ProfileController {
                     )
             }
     )
-    public ResponseEntity<?> getInfo(String token) throws UsernameNotFoundException {
+    public ResponseEntity<?> getInfo(@RequestBody String token) throws UsernameNotFoundException {
         String email = jwtCore.getEmailFromJwt(token);
         try {
             UserDetailsImpl userDetails = (UserDetailsImpl) userService.loadUserByUsername(email);
