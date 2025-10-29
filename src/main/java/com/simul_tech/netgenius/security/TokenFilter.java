@@ -24,7 +24,7 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = null;
-        String username = null;
+        String email = null;
         UserDetails userDetails;
         UsernamePasswordAuthenticationToken auth;
         try {
@@ -34,8 +34,8 @@ public class TokenFilter extends OncePerRequestFilter {
             }
             if (jwt != null) {
                 try {
-                    username = jwtCore.getEmailFromJwt(jwt);
-                    System.out.println("Email from JWT: " + username);
+                    email = jwtCore.getEmailFromJwt(jwt);
+                    System.out.println("Email from JWT: " + email);
                 } catch (ExpiredJwtException e) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
                     return;
@@ -44,15 +44,15 @@ public class TokenFilter extends OncePerRequestFilter {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                     return;
                 }
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    userDetails = userService.loadUserByUsername(username);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    userDetails = userService.loadUserByUsername(email);
                     auth = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
                             userDetails.getAuthorities()
                     );
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                    System.out.println("Authentication set for user: " + username);
+                    System.out.println("Authentication set for user with email: " + email);
                 }
             }
         } catch (Exception e) {

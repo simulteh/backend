@@ -22,7 +22,7 @@ public class UserDetailsImpl implements UserDetails {
     private String password;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private Collection<? extends GrantedAuthority> authorities; // добавляем поле
+    private Collection<? extends GrantedAuthority> authorities;
 
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(
