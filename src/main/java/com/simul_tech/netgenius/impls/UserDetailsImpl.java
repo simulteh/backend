@@ -15,9 +15,6 @@ import java.util.Collections;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private Integer id;
-    private String firstName;
-    private String lastName;
-    private String middleName;
     private String email;
     private String password;
     private LocalDateTime createdAt;
@@ -27,9 +24,6 @@ public class UserDetailsImpl implements UserDetails {
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(
                 user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getMiddleName(),
                 user.getEmail(),
                 user.getPassword(),
                 user.getCreatedAt(),

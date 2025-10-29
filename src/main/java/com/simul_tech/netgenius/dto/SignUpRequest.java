@@ -3,6 +3,7 @@ package com.simul_tech.netgenius.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -26,5 +27,6 @@ public class SignUpRequest {
 
     @Schema(description = "Пароль для входа", example = "ivanov123")
     @NotBlank(message = "Пароль обязателен")
+    @Size(min = 6, message = "Пароль должен быть больше 6 символов")
     private String password;
 }
