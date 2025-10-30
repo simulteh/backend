@@ -5,6 +5,7 @@ import com.simul_tech.netgenius.dto.PasswordResetRequest;
 import com.simul_tech.netgenius.dto.SignInRequest;
 import com.simul_tech.netgenius.dto.SignUpRequest;
 import com.simul_tech.netgenius.exceptions.ExpiredTokenException;
+import com.simul_tech.netgenius.exceptions.InvalidRequestException;
 import com.simul_tech.netgenius.exceptions.InvalidTokenException;
 import com.simul_tech.netgenius.exceptions.UserNotFoundException;
 import com.simul_tech.netgenius.models.User;
@@ -105,18 +106,11 @@ public class SecurityController {
             }
     )
     ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signupRequest) {
-        if (userService.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Пользователь с таким email уже существует");
+        try {
+            userService.signUpUser(signupRequest);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        String hashed = passwordEncoder.encode(signupRequest.getPassword());
-
-        User user = new User();
-        user.setFirstName(signupRequest.getFirstName());
-        user.setLastName(signupRequest.getLastName());
-        user.setMiddleName(signupRequest.getMiddleName());
-        user.setEmail(signupRequest.getEmail());
-        user.setPassword(hashed);
-        userService.save(user);
         return ResponseEntity.ok("Пользователь зарегистрирован");
     }
 

@@ -5,11 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "reset_tokens")
 @Data
+@Entity
+@Table(name = "creation_tokens")
 @NoArgsConstructor
-public class PasswordResetToken {
+public class CreationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -23,7 +23,7 @@ public class PasswordResetToken {
     @Column(name = "user_id", nullable = false)
     private int userId;
 
-    public PasswordResetToken(String token, int userId) {
+    public CreationToken(String token, int userId) {
         this.token = token;
         this.userId = userId;
         this.expiryDate = LocalDateTime.now().plusHours(24); // Reset-token is available for 24 hours bro
