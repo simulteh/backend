@@ -70,9 +70,10 @@ public class PasswordResetService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("abtserenov@edu.hse.ru");
             message.setTo(email);
             message.setSubject("Password Reset Request");
-            message.setText("Чтобы сбросить пароль, перейдите по ссылке:\n" +
+            message.setText("Чтобы сбросить пароль, перейдите по ссылке:\n\n" +
                     "http://simultech.ru/reset-password?token=" + token);
             javaMailSender.send(message);
             log.info("Password reset email sent to: {}", email);
