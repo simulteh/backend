@@ -4,12 +4,10 @@ import com.simul_tech.netgenius.dto.PasswordResetDTO;
 import com.simul_tech.netgenius.dto.PasswordResetRequest;
 import com.simul_tech.netgenius.dto.SignInRequest;
 import com.simul_tech.netgenius.dto.SignUpRequest;
-import com.simul_tech.netgenius.exceptions.ExpiredTokenException;
+import com.simul_tech.netgenius.exceptions.InvalidRequestException;
 import com.simul_tech.netgenius.exceptions.InvalidTokenException;
 import com.simul_tech.netgenius.exceptions.UserNotFoundException;
-import com.simul_tech.netgenius.models.User;
 import com.simul_tech.netgenius.security.JwtCore;
-import com.simul_tech.netgenius.services.PasswordResetService;
 import com.simul_tech.netgenius.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,9 +44,7 @@ import java.util.Map;
 public class SecurityController {
     private final JwtCore jwtCore;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final PasswordResetService passwordResetService;
 
     @GetMapping("/ping")
     public ResponseEntity<?> ping() {
@@ -105,18 +101,11 @@ public class SecurityController {
             }
     )
     ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signupRequest) {
-        if (userService.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Пользователь с таким email уже существует");
+        try {
+            userService.signUpUser(signupRequest);
+        } catch (InvalidRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        String hashed = passwordEncoder.encode(signupRequest.getPassword());
-
-        User user = new User();
-        user.setFirstName(signupRequest.getFirstName());
-        user.setLastName(signupRequest.getLastName());
-        user.setMiddleName(signupRequest.getMiddleName());
-        user.setEmail(signupRequest.getEmail());
-        user.setPassword(hashed);
-        userService.save(user);
         return ResponseEntity.ok("Пользователь зарегистрирован");
     }
 
@@ -180,7 +169,7 @@ public class SecurityController {
     @PostMapping("/forgot")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
         try {
-            passwordResetService.createPasswordResetToken(request.getEmail());
+            userService.sendResetToken(request.getEmail());
             return ResponseEntity.ok().body(
                     Map.of("message", "If the email exists, a password reset link has been sent")
             );
@@ -196,13 +185,13 @@ public class SecurityController {
     @PostMapping("/reset")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetDTO request) {
         try {
-            passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+            userService.resetPassword(request.getToken(), request.getNewPassword());
 
             return ResponseEntity.ok().body(
                     Map.of("message", "Password has been reset successfully")
             );
 
-        } catch (InvalidTokenException | ExpiredTokenException e) {
+        } catch (InvalidTokenException e) {
             return ResponseEntity.badRequest().body(
                     Map.of("error", "Invalid or expired reset token")
             );
@@ -217,6 +206,17 @@ public class SecurityController {
             );
         }
     }
+
+    @GetMapping("/confirm")
+    public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token) {
+        try {
+            userService.confirmUser(token);
+            return ResponseEntity.ok().body("email успешно подтверждён!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Неверный или просроченный токен");
+        }
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
