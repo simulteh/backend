@@ -14,7 +14,7 @@ import java.util.Collections;
 @Data
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
-    private Integer id;
+    private Long id;
     private String email;
     private String password;
     private LocalDateTime createdAt;
