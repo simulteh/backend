@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenFilter extends OncePerRequestFilter {
@@ -25,41 +27,36 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String jwt = null;
-        String email = null;
-        UserDetails userDetails;
-        UsernamePasswordAuthenticationToken auth;
+        String headerAuth = request.getHeader("Authorization");
+        if (headerAuth == null || !headerAuth.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String jwt = headerAuth.substring(7);
+        String email;
         try {
-            String headerAuth = request.getHeader("Authorization");
-            if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-                jwt = headerAuth.substring(7);
-            }
-            if (jwt != null) {
-                try {
-                    email = jwtCore.getEmailFromJwt(jwt);
-                    System.out.println("Email from JWT: " + email);
-                } catch (ExpiredJwtException e) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
-                    return;
-                } catch (Exception e) {
-                    System.out.println("Error while parsing JWT: " + e.getMessage());
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                    return;
-                }
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    userDetails = userService.loadUserByUsername(email);
-                    auth = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    System.out.println("Authentication set for user with email: " + email);
-                }
-            }
+            email = jwtCore.getEmailFromJwt(jwt);
+        } catch (ExpiredJwtException e) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
+            return;
         } catch (Exception e) {
+            log.debug("Failed to parse JWT: {}", e.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
             return;
+        }
+
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetails userDetails = userService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } catch (Exception e) {
+                log.debug("Failed to load user for token subject {}: {}", email, e.getMessage());
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                return;
+            }
         }
         filterChain.doFilter(request, response);
     }

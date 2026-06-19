@@ -1,34 +1,41 @@
 package com.simul_tech.netgenius.impls;
 
+import com.simul_tech.netgenius.enums.Role;
 import com.simul_tech.netgenius.models.User;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-
-@Data
+@Getter
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
-    private Long id;
-    private String email;
-    private String password;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final Long id;
+    private final String email;
+    private final String password;
+    private final Role role;
+    private final boolean emailConfirmed;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public static UserDetailsImpl build(User user) {
+        Role role = user.getRole() != null ? user.getRole() : Role.USER;
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
         return new UserDetailsImpl(
                 user.getId(),
                 user.getEmail(),
                 user.getPassword(),
+                role,
+                user.isEnabled(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
-                Collections.emptyList()
+                authorities
         );
     }
 
@@ -40,5 +47,12 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // Аутентификация разрешена и до подтверждения email; чувствительные
+        // операции проверяют emailConfirmed отдельно.
+        return true;
     }
 }

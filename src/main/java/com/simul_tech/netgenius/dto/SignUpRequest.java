@@ -20,6 +20,9 @@ public class SignUpRequest {
     @Schema(description = "Отчество пользователя", example = "Иванович")
     private String middleName;
 
+    @Schema(description = "Никнейм (не обязан быть уникальным)", example = "ivan")
+    private String nickname;
+
     @Schema(description = "Почта пользователя", example = "ivanov@mail.ru")
     @NotBlank(message = "Email обязателен")
     @Email(message = "Некорректный формат email")

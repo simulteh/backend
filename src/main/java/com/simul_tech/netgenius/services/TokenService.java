@@ -85,7 +85,6 @@ public class TokenService {
             if (token.getType() == type) {
                 token.getDetails().setConsumed(true);
                 tokenRepository.save(token);
-                break;
             }
         }
     }

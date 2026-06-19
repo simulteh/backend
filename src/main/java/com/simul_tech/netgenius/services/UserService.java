@@ -1,6 +1,7 @@
 package com.simul_tech.netgenius.services;
 
 import com.simul_tech.netgenius.dto.SignUpRequest;
+import com.simul_tech.netgenius.enums.Role;
 import com.simul_tech.netgenius.exceptions.EmailNotFound;
 import com.simul_tech.netgenius.exceptions.InvalidRequestException;
 import com.simul_tech.netgenius.exceptions.InvalidTokenException;
@@ -54,12 +55,62 @@ public class UserService implements UserDetailsService {
         user.setFirstName(signUpRequest.getFirstName());
         user.setLastName(signUpRequest.getLastName());
         user.setMiddleName(signUpRequest.getMiddleName());
+        user.setNickname(signUpRequest.getNickname());
         user.setEmail(signUpRequest.getEmail());
         user.setPassword(hashed);
+        user.setRole(Role.USER);
         user.setEnabled(false);
 
         userRepository.save(user);
         sendVerifyToken(user.getEmail());
+    }
+
+    /** Смена пароля авторизованным пользователем (проверяется текущий пароль). */
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = findById(userId);
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new InvalidRequestException("Текущий пароль неверен");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Password changed for user: {}", user.getEmail());
+    }
+
+    /** Обновление профиля (ФИО, никнейм). Незаданные поля не меняются. */
+    public User updateProfile(Long userId, String firstName, String lastName, String middleName, String nickname) {
+        User user = findById(userId);
+        if (firstName != null && !firstName.isBlank()) {
+            user.setFirstName(firstName);
+        }
+        if (lastName != null && !lastName.isBlank()) {
+            user.setLastName(lastName);
+        }
+        if (middleName != null) {
+            user.setMiddleName(middleName);
+        }
+        if (nickname != null) {
+            user.setNickname(nickname);
+        }
+        return userRepository.save(user);
+    }
+
+    /** Смена email: проверяется пароль, новый email сбрасывает подтверждение и шлёт письмо. */
+    public void updateEmail(Long userId, String newEmail, String password) {
+        User user = findById(userId);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new InvalidRequestException("Пароль неверен");
+        }
+        if (user.getEmail().equalsIgnoreCase(newEmail)) {
+            throw new InvalidRequestException("Новый email совпадает с текущим");
+        }
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new InvalidRequestException("Пользователь с таким email уже существует");
+        }
+        user.setEmail(newEmail);
+        user.setEnabled(false);
+        userRepository.save(user);
+        sendVerifyToken(newEmail);
+        log.info("Email changed for user id {} -> {}", userId, newEmail);
     }
 
     public User findById(Long id) {
@@ -68,34 +119,26 @@ public class UserService implements UserDetailsService {
     }
 
     public void sendVerifyToken(String email) {
+        User user = findByEmail(email);
+        String token = tokenService.createVerifyToken(user.getId());
+        // Доставка письма — побочный канал: её сбой не должен срывать регистрацию.
+        // Токен уже сохранён; пользователь сможет запросить повторную отправку.
         try {
-            User user = findByEmail(email);
-            String token = tokenService.createVerifyToken(user.getId());
-
             mailSenderService.sendCreationEmail(email, token, user.getFirstName());
-            log.info("Creation token created for user: {}", user.getEmail());
-        } catch (EmailNotFound e) {
-            log.info("User with email not found: {}", e.getMessage());
-            throw e;
+            log.info("Verification email sent to: {}", user.getEmail());
         } catch (Exception e) {
-            log.info("Failed to create verify token");
-            throw new RuntimeException(e.getMessage());
+            log.error("Не удалось отправить письмо подтверждения на {}: {}", email, e.getMessage());
         }
     }
 
     public void sendResetToken(String email) {
+        User user = findByEmail(email);
+        String token = tokenService.createResetToken(user.getId());
         try {
-            User user = findByEmail(email);
-            String token = tokenService.createResetToken(user.getId());
-
             mailSenderService.sendPasswordResetEmail(email, token, user.getFirstName());
-            log.info("Reset token created for user: {}", user.getEmail());
-        } catch (EmailNotFound e) {
-            log.info("User with email not found: {}", e.getMessage());
-            throw e;
+            log.info("Reset email sent to: {}", user.getEmail());
         } catch (Exception e) {
-            log.info("Failed to create verify token");
-            throw new RuntimeException(e.getMessage());
+            log.error("Не удалось отправить письмо сброса пароля на {}: {}", email, e.getMessage());
         }
     }
 

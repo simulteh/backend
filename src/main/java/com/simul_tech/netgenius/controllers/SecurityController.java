@@ -4,231 +4,114 @@ import com.simul_tech.netgenius.dto.PasswordResetDTO;
 import com.simul_tech.netgenius.dto.PasswordResetRequest;
 import com.simul_tech.netgenius.dto.SignInRequest;
 import com.simul_tech.netgenius.dto.SignUpRequest;
-import com.simul_tech.netgenius.exceptions.InvalidRequestException;
-import com.simul_tech.netgenius.exceptions.InvalidTokenException;
-import com.simul_tech.netgenius.exceptions.UserNotFoundException;
-import com.simul_tech.netgenius.security.JwtCore;
+import com.simul_tech.netgenius.dto.auth.*;
+import com.simul_tech.netgenius.dto.common.MessageResponse;
+import com.simul_tech.netgenius.services.AuthService;
+import com.simul_tech.netgenius.services.CurrentUserService;
 import com.simul_tech.netgenius.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
-
+/**
+ * Аутентификация и управление сессией. JWT access-токен живёт 15 минут,
+ * refresh-токен — 30 дней.
+ */
 @Slf4j
-@Validated
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "API для регистрации и авторизации пользователей")
+@Tag(name = "Authentication", description = "Регистрация, вход, обновление токена, подтверждение email")
 public class SecurityController {
-    private final JwtCore jwtCore;
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
+    private final CurrentUserService currentUserService;
 
     @GetMapping("/ping")
-    public ResponseEntity<?> ping() {
+    @Operation(summary = "Проверка доступности сервиса")
+    public ResponseEntity<String> ping() {
         return ResponseEntity.ok("pong");
     }
 
-    @PostMapping("/sign-up")
-    @Operation(
-            summary = "Регистрация нового пользователя",
-            description = "Создает нового пользователя с указанными данными. Email должен быть уникальным.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Данные для регистрации",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = SignUpRequest.class),
-                            examples = @ExampleObject(
-                                    name = "Пример запроса",
-                                    value = """
-                                            {
-                                                "firstName": "Иван",
-                                                "lastName": "Иванов",
-                                                "middleName": "Иванович",
-                                                "email": "ivanov@example.com",
-                                                "password": "password123"
-                                            }
-                                            """
-                            )
-                    )
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Успешная регистрация",
-                            content = @Content(
-                                    examples = @ExampleObject(
-                                            value = "Пользователь зарегистрирован"
-                                    )
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "Пользователь с таким email уже существует",
-                            content = @Content(
-                                    examples = @ExampleObject(
-                                            value = "Пользователь с таким email уже существует"
-                                    )
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "Внутренняя ошибка сервера"
-                    )
-            }
-    )
-    ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signupRequest) {
-        try {
-            userService.signUpUser(signupRequest);
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        return ResponseEntity.ok("Пользователь зарегистрирован");
+    @PostMapping("/register")
+    @Operation(summary = "Регистрация нового пользователя (роль USER, требуется подтверждение email)")
+    public ResponseEntity<MessageResponse> register(@Valid @RequestBody SignUpRequest request) {
+        userService.signUpUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(MessageResponse.of("Пользователь зарегистрирован, подтвердите email"));
     }
 
-    @PostMapping("/sign-in")
-    @Operation(
-            summary = "Авторизация пользователя",
-            description = "Аутентификация пользователя по email и паролю. Возвращает JWT токен для доступа к защищенным endpoints.",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Учетные данные пользователя",
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = SignInRequest.class),
-                            examples = @ExampleObject(
-                                    name = "Пример запроса",
-                                    value = """
-                                            {
-                                                "email": "ivanov@example.com",
-                                                "password": "password123"
-                                            }
-                                            """
-                            )
-                    )
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Успешная авторизация",
-                            content = @Content(
-                                    examples = @ExampleObject(
-                                            name = "Пример ответа",
-                                            value = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-                                    )
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            description = "Неверные учетные данные"
-                    ),
-                    @ApiResponse(
-                            responseCode = "500",
-                            description = "Внутренняя ошибка сервера"
-                    )
-            }
-    )
-    ResponseEntity<?> signin(@Valid @RequestBody SignInRequest signinRequest) {
-        Authentication authentication = null;
-        try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            signinRequest.getEmail(),
-                            signinRequest.getPassword()));
-        } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtCore.generateToken(authentication);
-        return ResponseEntity.ok(jwt);
+    @PostMapping("/login")
+    @Operation(summary = "Вход: возвращает access- и refresh-токены")
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody SignInRequest request) {
+        return ResponseEntity.ok(authService.login(request.getEmail(), request.getPassword()));
     }
 
-    @PostMapping("/forgot")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
-        try {
-            userService.sendResetToken(request.getEmail());
-            return ResponseEntity.ok().body(
-                    Map.of("message", "If the email exists, a password reset link has been sent")
-            );
-
-        } catch (Exception e) {
-            log.error("Error in password reset request for email: {}", request.getEmail(), e);
-            return ResponseEntity.ok().body(
-                    Map.of("message", "If the email exists, a password reset link has been sent")
-            );
-        }
+    @PostMapping("/refresh")
+    @Operation(summary = "Обновление пары токенов по refresh-токену (с ротацией)")
+    public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request.refreshToken()));
     }
 
-    @PostMapping("/reset")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetDTO request) {
-        try {
-            userService.resetPassword(request.getToken(), request.getNewPassword());
+    @PostMapping("/logout")
+    @Operation(summary = "Выход: отзывает refresh-токены пользователя")
+    public ResponseEntity<MessageResponse> logout(@Valid @RequestBody LogoutRequest request) {
+        authService.logout(request.refreshToken());
+        return ResponseEntity.ok(MessageResponse.of("Выход выполнен"));
+    }
 
-            return ResponseEntity.ok().body(
-                    Map.of("message", "Password has been reset successfully")
-            );
-
-        } catch (InvalidTokenException e) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("error", "Invalid or expired reset token")
-            );
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.badRequest().body(
-                    Map.of("error", "User not found")
-            );
-        } catch (Exception e) {
-            log.error("Error resetting password", e);
-            return ResponseEntity.badRequest().body(
-                    Map.of("error", "Failed to reset password")
-            );
-        }
+    @PostMapping("/confirm-email")
+    @Operation(summary = "Подтверждение email по токену из письма")
+    public ResponseEntity<MessageResponse> confirmEmail(@Valid @RequestBody ConfirmEmailRequest request) {
+        userService.confirmUser(request.token());
+        return ResponseEntity.ok(MessageResponse.of("Email подтверждён"));
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token) {
-        try {
-            userService.confirmUser(token);
-            return ResponseEntity.ok().body("email успешно подтверждён!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Неверный или просроченный токен");
-        }
+    @Operation(summary = "Подтверждение email по ссылке (token в query)")
+    public ResponseEntity<MessageResponse> confirmByLink(@RequestParam("token") String token) {
+        userService.confirmUser(token);
+        return ResponseEntity.ok(MessageResponse.of("Email подтверждён"));
     }
 
+    @PostMapping("/change-password")
+    @Operation(summary = "Смена пароля авторизованным пользователем",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<MessageResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(currentUserService.getCurrentUserId(),
+                request.oldPassword(), request.newPassword());
+        return ResponseEntity.ok(MessageResponse.of("Пароль изменён"));
+    }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Запрос на сброс пароля (письмо со ссылкой)")
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
+        try {
+            userService.sendResetToken(request.getEmail());
+        } catch (Exception e) {
+            // Не раскрываем существование email.
+            log.debug("forgot-password для {} завершился: {}", request.getEmail(), e.getMessage());
+        }
+        return ResponseEntity.ok(MessageResponse.of("Если email существует, ссылка для сброса отправлена"));
+    }
 
-        return ResponseEntity.badRequest().body(
-                Map.of("error", "Validation failed", "details", errors)
-        );
+    @PostMapping("/reset-password")
+    @Operation(summary = "Установка нового пароля по токену сброса")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody PasswordResetDTO request) {
+        userService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(MessageResponse.of("Пароль успешно сброшен"));
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Текущий пользователь по access-токену",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    public ResponseEntity<MeResponse> me() {
+        return ResponseEntity.ok(authService.me());
     }
 }
