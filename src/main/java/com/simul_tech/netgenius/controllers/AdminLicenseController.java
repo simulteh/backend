@@ -7,6 +7,7 @@ import com.simul_tech.netgenius.dto.license.CreatedLicenseResponse;
 import com.simul_tech.netgenius.dto.license.LicenseBatchResponse;
 import com.simul_tech.netgenius.services.LicenseService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +29,7 @@ public class AdminLicenseController {
 
     @PostMapping("/create")
     @Operation(summary = "Создать одиночную лицензию")
+    @ApiResponse(responseCode = "201", description = "Лицензия создана")
     public ResponseEntity<CreatedLicenseResponse> create(
             @Valid @RequestBody(required = false) CreateLicenseRequest request) {
         CreateLicenseRequest body = request != null ? request : new CreateLicenseRequest(null);
@@ -36,6 +38,7 @@ public class AdminLicenseController {
 
     @PostMapping("/batch")
     @Operation(summary = "Создать партию лицензий")
+    @ApiResponse(responseCode = "201", description = "Партия лицензий создана")
     public ResponseEntity<LicenseBatchResponse> createBatch(
             @Valid @RequestBody CreateLicenseBatchRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(licenseService.createBatch(request));

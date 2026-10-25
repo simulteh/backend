@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,7 +29,8 @@ class SwaggerRootUiTest {
                 .andExpect(content().string(containsString("swagger-initializer.js")));
         mvc.perform(root("/swagger-ui/swagger-initializer.js"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("/api-docs/swagger-config")));
+                .andExpect(content().string(containsString("/api-docs/swagger-config")))
+                .andExpect(content().string(not(containsString("petstore.swagger.io"))));
         mvc.perform(root("/api-docs/swagger-config"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("application/json"))

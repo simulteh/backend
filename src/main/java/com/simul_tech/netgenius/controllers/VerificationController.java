@@ -5,6 +5,7 @@ import com.simul_tech.netgenius.dto.verification.TeacherVerificationRequest;
 import com.simul_tech.netgenius.dto.verification.VerificationRequestResponse;
 import com.simul_tech.netgenius.services.VerificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,6 +28,7 @@ public class VerificationController {
 
     @PostMapping("/student")
     @Operation(summary = "Подать заявку на роль студента")
+    @ApiResponse(responseCode = "201", description = "Заявка на роль студента создана")
     public ResponseEntity<VerificationRequestResponse> requestStudent(
             @Valid @RequestBody StudentVerificationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(verificationService.requestStudent(request));
@@ -34,6 +36,7 @@ public class VerificationController {
 
     @PostMapping("/teacher")
     @Operation(summary = "Подать заявку на роль преподавателя")
+    @ApiResponse(responseCode = "201", description = "Заявка на роль преподавателя создана")
     public ResponseEntity<VerificationRequestResponse> requestTeacher(
             @Valid @RequestBody TeacherVerificationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(verificationService.requestTeacher(request));

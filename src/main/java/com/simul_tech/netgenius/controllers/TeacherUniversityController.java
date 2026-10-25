@@ -5,6 +5,7 @@ import com.simul_tech.netgenius.dto.university.UniversityRequestResponse;
 import com.simul_tech.netgenius.models.UniversityCreationRequest;
 import com.simul_tech.netgenius.services.UniversityService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,6 +28,7 @@ public class TeacherUniversityController {
 
     @PostMapping("/university-request")
     @Operation(summary = "Подать заявку на создание вуза")
+    @ApiResponse(responseCode = "201", description = "Заявка на создание вуза создана")
     public ResponseEntity<UniversityRequestResponse> createRequest(
             @Valid @RequestBody UniversityRequestCreateRequest request) {
         UniversityCreationRequest created = universityService.createRequest(
