@@ -39,6 +39,10 @@ logs/
 *.log
 .m2
 
-# Docker
-docker-compose.yml
-Dockerfile
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Database backups
+backups/

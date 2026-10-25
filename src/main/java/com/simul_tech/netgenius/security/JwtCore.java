@@ -14,7 +14,7 @@ import java.util.Date;
  */
 @Component
 public class JwtCore {
-    @Value("${testing.app.secret}")
+    @Value("${app.jwt.secret}")
     private String secret;
 
     /** Время жизни access-токена в мс (по умолчанию 15 минут). */

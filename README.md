@@ -16,48 +16,79 @@ Backend системы дистанционного обучения с деск
 
 ## Запуск
 
-### Docker (рекомендуется)
+На существующей ВМ `/root/net-genius` используется **корневой** Docker Compose
+с сервисами `nginx`, `frontend`, `backend`, `database`. Бэкенд собирается из
+`./backend/Dockerfile`; nginx обращается к нему по `backend:8080`, а бэкенд —
+к существующей PostgreSQL по `database:5432`. Пошаговая инструкция сохранения
+данных и обновления — [DEPLOY.md](DEPLOY.md).
+
+Для этой ВМ скопируйте `backend/deploy/vm.env.example` в `backend/.env`, заполните
+почту, JWT и первого администратора, затем подключите файл через `env_file`
+в существующем сервисе `backend`. Настройки БД и `postgres_data` в корневом Compose
+сохраняются. Все команды Compose на ВМ выполняются из `/root/net-genius`.
+
+Swagger: `https://www.simultech.ru/swagger-ui/index.html`, API через `/api`.
+Для этой схемы задаются `PUBLIC_API_URL=/api` и
+`FORWARD_HEADERS_STRATEGY=framework`; конфиг для контейнера nginx —
+[`deploy/nginx.vm.conf`](deploy/nginx.vm.conf).
+
+### Отдельный запуск бэкенда и новой БД
+
+`docker-compose.yml` внутри репозитория бэкенда — независимый вариант с сервисами
+`app` и `postgres`. На существующей ВМ его не запускаем: там уже есть база
+и общий Compose. Для нового отдельного окружения из каталога бэкенда:
 
 ```bash
-docker compose up --build
+cp .env.example .env
+chmod 600 .env
+nano .env
+# После заполнения настроек:
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 180
 ```
 
-Поднимает PostgreSQL и приложение на `http://localhost:8080`. Swagger UI —
-`http://localhost:8080/swagger-ui.html`.
+Именно для этого варианта `.env.example` содержит `POSTGRES_*`,
+`APP_BIND_ADDRESS` и `APP_PORT`. API публикуется на порту `APP_PORT` (8080
+по умолчанию), Swagger — `/swagger-ui/index.html`, проверка — `GET /auth/ping`.
+PostgreSQL доступен внутри отдельной Docker-сети; данные хранятся в volume.
+Реальный `.env` исключён из Git и Docker build context в обоих вариантах запуска.
 
-### Локально
+### Локальный запуск без контейнера приложения
 
-Нужны JDK 17 и запущенный PostgreSQL (`netgenius`/`postgres`/`postgres` на 5432).
+Нужны JDK 17, PostgreSQL на localhost и те же переменные окружения из `.env`.
+Сам Spring Boot автоматически этот файл не читает. Если `.env` заполнен в
+совместимом с shell формате (секреты в одинарных кавычках), переменные можно загрузить так:
 
 ```bash
-mvn spring-boot:run
-# либо с локальным профилем (БД на localhost):
+set -a
+. ./.env
+set +a
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-> На машинах, где JDK по умолчанию новее 17, используйте JDK 17 для сборки
-> (см. `pom.xml`, `<java.version>17</java.version>`).
+Этот вариант требует отдельно доступного PostgreSQL на localhost:5432;
+ни один из описанных Compose не публикует порт базы на ВМ.
+На машинах с более новой JDK используйте JDK 17 для сборки.
 
 ### Тесты
 
 ```bash
-mvn test
+mvn clean verify
 ```
 
-Тесты выполняются на H2 in-memory (`@SpringBootTest`, MockMvc). `ApiSmokeTest`
-проверяет регистрацию/логин/JWT и RBAC. `AuthSecurityTest` проверяет привязку JWT
-к пользователю при смене и повторной регистрации email, актуальность ролей,
-ошибки 401/403, ротацию и отзыв refresh-токенов, смену и сброс пароля,
-одноразовость токенов и конкурирующие транзакции.
+Основные тесты выполняются на H2 in-memory (`@SpringBootTest`, MockMvc).
+Проверяются регистрация, JWT, RBAC, ротация и отзыв токенов, одноразовые ссылки,
+конкурирующие транзакции, группы, оценки, заявки, письма и Swagger.
+`DeploymentConfigurationTest` отдельно проверяет загрузку production-настроек
+из окружения и SMTP в режимах STARTTLS/SSL. Реальную доставку писем и запуск
+с PostgreSQL необходимо проверить на ВМ.
 
-## Учётные данные по умолчанию
+### Первый администратор
 
-При первом старте `DataInitializer` создаёт администратора и набор
-демонстрационных лабораторных работ:
-
-- **admin@netgenius.ru** / **Admin12345** (роль `ADMIN`)
-
-Значения настраиваются в `application.properties` (`app.admin.*`, `app.seed.labs`).
+`DataInitializer` создаёт администратора из `ADMIN_EMAIL` и `ADMIN_PASSWORD`,
+если такого email ещё нет. Общего пароля по умолчанию нет. При последующих
+запусках пароль существующего аккаунта не перезаписывается. Демонстрационные
+лабораторные создаются только при `SEED_LABS=true`.
 
 ## Роли и доступ (RBAC)
 

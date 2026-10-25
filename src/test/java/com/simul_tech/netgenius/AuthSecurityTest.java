@@ -64,7 +64,7 @@ class AuthSecurityTest {
     @Autowired private RefreshTokenService refreshTokenService;
     @Autowired private TokenService tokenService;
     @Autowired private PlatformTransactionManager transactionManager;
-    @Value("${testing.app.secret}") private String secret;
+    @Value("${app.jwt.secret}") private String secret;
 
     @Test
     void unknownEmailAndWrongPasswordReturnSameUnauthorizedResponse() throws Exception {

@@ -38,7 +38,9 @@ public class User {
 
     /** Роль пользователя. Новый пользователь регистрируется как USER. */
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 20)
+    // DEFAULT также заполняет роль при добавлении колонки в старую непустую таблицу users.
+    @Column(name = "role", nullable = false, length = 20,
+            columnDefinition = "varchar(20) default 'USER'")
     private Role role = Role.USER;
 
     @Column(name = "created_at")
