@@ -100,30 +100,43 @@ PostgreSQL доступен приложению по `postgres:5432` внутр
 и проксируйте запросы на `http://127.0.0.1:8080`. Для прямого доступа к API
 используется `APP_BIND_ADDRESS=0.0.0.0`. HTTPS настраивается на reverse proxy.
 
-Swagger: `http://АДРЕС_ВМ:8080/swagger-ui.html` при прямом доступе либо
-`/api/swagger-ui.html` при nginx с внешним префиксом `/api` (см. ниже).
-На фронтенде должны существовать
-страницы `/confirm-email?token=...` и `/reset-password?token=...`.
+Swagger при прямом доступе: `http://АДРЕС_ВМ:8080/swagger-ui/index.html`.
+Текущий адрес на ВМ: `https://www.simultech.ru/swagger-ui/index.html`.
+На фронтенде должны существовать страницы `/confirm-email?token=...`
+и `/reset-password?token=...`.
 
-### Swagger и API через nginx по `/api`
+### Текущая ВМ: Swagger в корне домена, API через `/api`
 
-В старых правках ВМ адреса Swagger были зашиты в `SwaggerConfig`. Теперь
-адрес определяется из запроса либо задаётся в `.env`:
+Адрес страницы Swagger и адрес запросов к API различаются:
+
+- Swagger UI: `/swagger-ui/index.html`.
+- Конфигурация Swagger: `/api-docs/swagger-config` (должна возвращать JSON).
+- OpenAPI-схема: `/api-docs` (должна возвращать JSON).
+- Запросы из Try it out: `/api/...`.
+
+В `.env` для этой схемы укажите:
 
 ```dotenv
+FRONTEND_URL=https://www.simultech.ru
 APP_BIND_ADDRESS=127.0.0.1
 PUBLIC_API_URL=/api
 FORWARD_HEADERS_STRATEGY=framework
 ```
 
-В существующем `server {}` nginx сверьте `location /api/` с фрагментом
-[`deploy/nginx-api.conf`](deploy/nginx-api.conf); если такого location ещё нет,
-добавьте его. Этот фрагмент проксирует `/api/` на
-`http://127.0.0.1:8080/`, передаёт внешний протокол, host и префикс `/api`.
-Если меняли `APP_PORT`, измените также порт в `proxy_pass`.
+В существующем `server {}` nginx сверьте location для Swagger, схемы и API
+с [`deploy/nginx-api.conf`](deploy/nginx-api.conf). Обновите соответствующие
+блоки, добавив недостающие. Корневые `/swagger-ui/` и `/api-docs` проксируются
+с исходным путём; `/api/` проксируется со снятием этого префикса. Только API-location
+передаёт `X-Forwarded-Prefix: /api`, а корневые Swagger/schema location очищают его.
+Если меняли `APP_PORT`, измените также порт во всех `proxy_pass`.
+
+Важен весь префикс `/api-docs`, включая `/api-docs/swagger-config`. Одного
+точного location для `/api-docs` недостаточно: вложенный URL может попасть
+на React-фронтенд и вернуть HTML вместо JSON.
+
 `framework` используется с доверенным nginx и закрытым прямым доступом к приложению;
 для прямого доступа к API в шаблоне остаётся `FORWARD_HEADERS_STRATEGY=none`.
-Это соответствует [рекомендациям springdoc для reverse proxy](https://springdoc.org/v2/#how-can-i-deploy-springdoc-openapi-starter-webmvc-ui-behind-a-reverse-proxy).
+Настройки proxy headers соответствуют [рекомендациям springdoc](https://springdoc.org/v2/#how-can-i-deploy-springdoc-openapi-starter-webmvc-ui-behind-a-reverse-proxy).
 
 После правки nginx и `.env`:
 
@@ -131,12 +144,15 @@ FORWARD_HEADERS_STRATEGY=framework
 sudo nginx -t
 sudo systemctl reload nginx
 docker compose up -d --wait --wait-timeout 180
+curl --fail https://www.simultech.ru/api/auth/ping
+curl --fail https://www.simultech.ru/api-docs/swagger-config
 ```
 
-Откройте `https://ВАШ-ДОМЕН/api/swagger-ui.html`. Загрузка схемы должна идти на
-`/api/api-docs`, а кнопка Try it out — отправлять запросы в `/api/...` этого же домена.
-Для HTTP используйте схему фактического адреса. Прямой доступ без nginx также
-поддерживается: оставьте `PUBLIC_API_URL` пустым, Swagger возьмёт адрес из запроса.
+Первая команда curl должна вернуть `pong`, вторая — JSON с настройками Swagger.
+Откройте `https://www.simultech.ru/swagger-ui/index.html` и проверьте Try it out.
+При прямом доступе без nginx оставьте `PUBLIC_API_URL` пустым: Swagger возьмёт
+адрес из запроса. Размещение Swagger целиком под `/api/swagger-ui/` тоже
+поддерживается API-location, но текущий адрес страницы на ВМ остаётся корневым.
 
 ## 4. Проверить почту и вход
 
