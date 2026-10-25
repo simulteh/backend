@@ -31,6 +31,9 @@ public class MailSenderService {
     @Value("${app.mail.from:${spring.mail.username:}}")
     private String from;
 
+    @Value("${spring.mail.username:}")
+    private String smtpUsername;
+
     public void sendPasswordResetEmail(String email, String token, String userName) {
         String resetLink = frontendLink("/reset-password", token);
         String subject = "Сброс пароля — СИМУЛТЕХ";
@@ -62,7 +65,7 @@ public class MailSenderService {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(from, "СИМУЛТЕХ");
+            helper.setFrom(senderAddress(), "СИМУЛТЕХ");
             helper.setTo(teacherRequestEmail);
             helper.setReplyTo(user.getEmail());
             helper.setSubject("Заявка на статус преподавателя — СИМУЛТЕХ");
@@ -92,6 +95,10 @@ public class MailSenderService {
         }
     }
 
+    private String senderAddress() {
+        return from == null || from.isBlank() ? smtpUsername : from;
+    }
+
     private MimeMessage buildMessage(String subject, String email, String htmlContent) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -99,7 +106,7 @@ public class MailSenderService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setSubject(subject);
-            helper.setFrom(from, "СИМУЛТЕХ");
+            helper.setFrom(senderAddress(), "СИМУЛТЕХ");
             helper.setTo(email);
 
             helper.setText(htmlContent, true);

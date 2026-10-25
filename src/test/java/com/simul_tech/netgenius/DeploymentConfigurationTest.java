@@ -3,6 +3,11 @@ package com.simul_tech.netgenius;
 import com.simul_tech.netgenius.security.JwtCore;
 import com.simul_tech.netgenius.configurators.SwaggerConfig;
 import io.swagger.v3.oas.models.OpenAPI;
+import com.simul_tech.netgenius.services.EmailTemplateService;
+import com.simul_tech.netgenius.services.MailSenderService;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
+import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -12,6 +17,7 @@ import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -19,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 /** Проверяет реальный production-файл, а не одноимённый H2-файл из test/resources. */
 class DeploymentConfigurationTest {
@@ -75,6 +82,38 @@ class DeploymentConfigurationTest {
     void missingJwtSecretPreventsStartup() {
         runner(Map.of("JWT_SECRET", "${MISSING_DEPLOYMENT_JWT_SECRET}"))
                 .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
+    void existingRootComposeDatasourceSettingsKeepPrecedence() {
+        runner(Map.of("SPRING_DATASOURCE_URL", "jdbc:postgresql://database:5432/netgenius",
+                "SPRING_DATASOURCE_USERNAME", "postgres", "SPRING_DATASOURCE_PASSWORD", "existing-test-password",
+                "SPRING_PROFILES_ACTIVE", "prod")).run(context -> {
+            assertThat(context).hasNotFailed();
+            var environment = context.getEnvironment();
+            assertThat(environment.getProperty("spring.datasource.url"))
+                    .isEqualTo("jdbc:postgresql://database:5432/netgenius");
+            assertThat(environment.getProperty("spring.datasource.username")).isEqualTo("postgres");
+            assertThat(environment.getProperty("spring.datasource.password")).isEqualTo("existing-test-password");
+        });
+    }
+
+    @Test
+    void emptySenderFromEnvFileUsesSmtpUsername() {
+        JavaMailSender mail = mock(JavaMailSender.class);
+        when(mail.createMimeMessage()).thenAnswer(invocation -> new MimeMessage((Session) null));
+        runner(Map.of("SMTP_FROM", ""))
+                .withBean(JavaMailSender.class, () -> mail)
+                .withBean(EmailTemplateService.class)
+                .withBean(MailSenderService.class)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    context.getBean(MailSenderService.class)
+                            .sendCreationEmail("student@example.test", "test-token", "Student");
+                    ArgumentCaptor<MimeMessage> message = ArgumentCaptor.forClass(MimeMessage.class);
+                    verify(mail).send(message.capture());
+                    assertThat(message.getValue().getFrom()[0].toString()).contains("mail@example.test");
+                });
     }
 
     private ApplicationContextRunner runner(Map<String, String> overrides) {

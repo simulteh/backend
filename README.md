@@ -16,8 +16,27 @@ Backend системы дистанционного обучения с деск
 
 ## Запуск
 
-Для ВМ используется Docker Compose: бэкенд и PostgreSQL работают в контейнерах
-на одной машине. Пошаговая инструкция — [DEPLOY.md](DEPLOY.md).
+На существующей ВМ `/root/net-genius` используется **корневой** Docker Compose
+с сервисами `nginx`, `frontend`, `backend`, `database`. Бэкенд собирается из
+`./backend/Dockerfile`; nginx обращается к нему по `backend:8080`, а бэкенд —
+к существующей PostgreSQL по `database:5432`. Пошаговая инструкция сохранения
+данных и обновления — [DEPLOY.md](DEPLOY.md).
+
+Для этой ВМ скопируйте `backend/deploy/vm.env.example` в `backend/.env`, заполните
+почту, JWT и первого администратора, затем подключите файл через `env_file`
+в существующем сервисе `backend`. Настройки БД и `postgres_data` в корневом Compose
+сохраняются. Все команды Compose на ВМ выполняются из `/root/net-genius`.
+
+Swagger: `https://www.simultech.ru/swagger-ui/index.html`, API через `/api`.
+Для этой схемы задаются `PUBLIC_API_URL=/api` и
+`FORWARD_HEADERS_STRATEGY=framework`; конфиг для контейнера nginx —
+[`deploy/nginx.vm.conf`](deploy/nginx.vm.conf).
+
+### Отдельный запуск бэкенда и новой БД
+
+`docker-compose.yml` внутри репозитория бэкенда — независимый вариант с сервисами
+`app` и `postgres`. На существующей ВМ его не запускаем: там уже есть база
+и общий Compose. Для нового отдельного окружения из каталога бэкенда:
 
 ```bash
 cp .env.example .env
@@ -28,16 +47,11 @@ docker compose config --quiet
 docker compose up -d --build --wait --wait-timeout 180
 ```
 
-SMTP, пароль БД, JWT-секрет и данные первого администратора задаются в `.env`
-рядом с `docker-compose.yml`. Реальный `.env` исключён из Git и Docker build context.
-В репозитории хранится только `.env.example` с пустыми полями для секретов.
-
-API доступно на порту `APP_PORT` (по умолчанию 8080), Swagger —
-`/swagger-ui.html`, проверка доступности — `GET /auth/ping`.
-PostgreSQL доступен только внутри Docker-сети; данные хранятся в `postgres_data`.
-На текущей ВМ Swagger открывается по `https://www.simultech.ru/swagger-ui/index.html`,
-а запросы API идут через `/api`. Для этого настройте `PUBLIC_API_URL=/api`,
-`FORWARD_HEADERS_STRATEGY=framework` и корневые location Swagger/schema по [DEPLOY.md](DEPLOY.md).
+Именно для этого варианта `.env.example` содержит `POSTGRES_*`,
+`APP_BIND_ADDRESS` и `APP_PORT`. API публикуется на порту `APP_PORT` (8080
+по умолчанию), Swagger — `/swagger-ui/index.html`, проверка — `GET /auth/ping`.
+PostgreSQL доступен внутри отдельной Docker-сети; данные хранятся в volume.
+Реальный `.env` исключён из Git и Docker build context в обоих вариантах запуска.
 
 ### Локальный запуск без контейнера приложения
 
@@ -53,7 +67,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
 Этот вариант требует отдельно доступного PostgreSQL на localhost:5432;
-основной Compose не публикует порт базы на ВМ.
+ни один из описанных Compose не публикует порт базы на ВМ.
 На машинах с более новой JDK используйте JDK 17 для сборки.
 
 ### Тесты

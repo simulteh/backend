@@ -1,199 +1,275 @@
-# Запуск на ВМ
+# Обновление существующей ВМ
 
-Бэкенд и PostgreSQL запускаются в Docker на одной ВМ. На ВМ нужны Git,
-Docker Engine и Docker Compose v2 (`docker compose version`). Java и Maven
-на саму ВМ устанавливать не нужно: сборка выполняется в Dockerfile.
+Эта инструкция относится к существующему проекту `/root/net-genius`:
 
-## 1. Получить код
-
-В существующем клоне репозитория переключитесь на `main`.
-При первом обновлении на эту версию старый `.env` перестаёт храниться в Git.
-Если он есть, сначала сохраните его настройки вне репозитория:
-
-```bash
-set -e
-if [ -f .env ] && git ls-files --error-unmatch .env >/dev/null 2>&1; then
-  cp -p .env ../backend.env.backup
-  chmod 600 ../backend.env.backup
-  git restore -- .env
-fi
-git switch main
-git pull --ff-only origin main
+```text
+/root/net-genius/
+├── docker-compose.yml     ← запускает все четыре сервиса
+├── backend/              ← Git-репозиторий бэкенда
+│   ├── Dockerfile
+│   └── .env              ← новые настройки почты, JWT и администратора
+├── frontend/
+└── nginx/nginx.conf
 ```
 
-## 2. Заполнить настройки
+Сервисы уже называются `nginx`, `frontend`, `backend`, `database`.
+Nginx работает **в контейнере** и обращается к `backend:8080`.
+Бэкенд обращается к `database:5432`. Снаружи открыты только порты nginx 80/443.
+Существующая PostgreSQL 15 хранит данные в volume `postgres_data`.
 
-Если `.env` ещё нет, создайте его из шаблона:
+Команды ниже выполняются **из `/root/net-genius`**, даже если меняются файлы
+бэкенда. Все команды с `docker compose` используют корневой Compose.
+`backend/docker-compose.yml` — отдельный вариант запуска бэкенда с новой БД;
+на этой ВМ его не используем. Отсутствие этого файла в старом клоне было
+локальным удалением (`D` в `git status`). После `git restore` он может вернуться,
+но запускать его здесь не требуется.
+
+## 1. Сохранить текущую версию и базу
+
+Сначала создайте приватную копию. В архив попадут старые настройки и сертификаты,
+поэтому не отправляйте его в чат или Git. Эти команды не останавливают контейнеры.
 
 ```bash
-test -f .env || cp .env.example .env
-chmod 600 .env
-nano .env
+(
+set -eu
+cd /root/net-genius
+umask 077
+VM_BACKUP_DIR="/root/net-genius-backups/$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$VM_BACKUP_DIR"
+tar -czf "$VM_BACKUP_DIR/code-config.tar.gz" backend docker-compose.yml nginx
+docker compose exec -T database sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > "$VM_BACKUP_DIR/database.dump"
+test -s "$VM_BACKUP_DIR/database.dump"
+docker compose exec -T database pg_restore --list < "$VM_BACKUP_DIR/database.dump" > "$VM_BACKUP_DIR/database-contents.txt"
+tar -tzf "$VM_BACKUP_DIR/code-config.tar.gz" > /dev/null
+printf 'Копия сохранена: %s\n' "$VM_BACKUP_DIR"
+)
 ```
 
-Все секреты указываются здесь, в `.env` рядом с `docker-compose.yml`.
-Файл не попадает в Git и образ приложения. Для паролей используйте одинарные
-кавычки: `SMTP_PASSWORD='значение'`. Это сохраняет символы `$` и `#`
-([правила Docker Compose](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/#env-file-syntax)).
+Блок останавливается при первой ошибке. В таком случае сначала исправьте её.
+Переходите дальше только после успешного сохранения архива и проверки дампа.
+`pg_dump` читает работающую БД; ничего в ней не меняет.
 
-Обязательно заполните:
+## 2. Отбросить старые изменения кода и получить новую версию
 
-| Переменная | Что указать |
+Пользователь разрешил отбросить незакоммиченные изменения **в клоне бэкенда
+на ВМ**. Архив из шага 1 позволяет их восстановить. Команда `restore`
+возвращает отслеживаемые Git-файлы к последнему коммиту; неотслеживаемые файлы
+не удаляет. Корневой Compose, nginx и PostgreSQL эта команда не меняет.
+
+Сначала слейте подготовленную ветку `codex/vm-deploy` в `main` на GitHub.
+Затем на ВМ:
+
+```bash
+cd /root/net-genius
+git -C backend restore --source=HEAD --staged --worktree -- .
+git -C backend status --short --branch
+git -C backend pull --ff-only origin main
+git -C backend log -1 --oneline
+```
+
+При ошибке `pull` остановитесь и разберите причину. Не используйте
+`git clean` или `git reset --hard`. Сам `git pull` только обновляет файлы;
+старый бэкенд продолжает работать в прежнем контейнере.
+
+## 3. Заполнить настройки бэкенда
+
+Создайте файл из шаблона, если его ещё нет:
+
+```bash
+cd /root/net-genius
+test -f backend/.env || cp backend/deploy/vm.env.example backend/.env
+chmod 600 backend/.env
+nano backend/.env
+```
+
+`backend/.env` — настройки приложения. Он исключён из Git и Docker build context.
+Пароли записывайте в одинарных кавычках, особенно если в них есть `$` или `#`.
+Настоящий файл с паролями никому присылать не нужно.
+
+| Настройка | Что указать |
 |---|---|
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Имя БД, пользователь и пароль. Если база уже существует, сохраните её действующие значения из старых настроек |
-| `JWT_SECRET` | Один раз сгенерированный ключ: `openssl rand -base64 64 \| tr -d '\n'` |
-| `SMTP_USERNAME` | Логин почтового ящика, обычно полный email |
-| `SMTP_PASSWORD` | Сгенерированный SMTP-пароль / пароль приложения |
-| `FRONTEND_URL` | Адрес фронтенда, например `https://simulteh.com`. По нему формируются ссылки подтверждения и сброса пароля |
-| `TEACHER_REQUEST_EMAIL` | Почта, куда отправлять заявки преподавателей с документами |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Вы сами выбираете email и отдельный пароль для первого администратора приложения; вход через `/auth/login` |
+| `JWT_SECRET` | Один раз сгенерировать `openssl rand -base64 64` и вставить одной строкой |
+| `SMTP_USERNAME` | Почтовый ящик отправителя |
+| `SMTP_PASSWORD` | Сгенерированный пароль приложения для почты |
+| `SMTP_HOST`, `SMTP_PORT` | В шаблоне Яндекс, порт 465 с SSL; сверить с вашим провайдером |
+| `SMTP_FROM` | Можно оставить пустым: используется `SMTP_USERNAME` |
+| `FRONTEND_URL` | `https://www.simultech.ru`; сюда ведут ссылки из писем |
+| `TEACHER_REQUEST_EMAIL` | Ящик получателя заявок преподавателей |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Ваши email и пароль первого администратора приложения |
+| `PUBLIC_API_URL` | `/api`, адрес запросов Swagger на этом сайте |
+| `FORWARD_HEADERS_STRATEGY` | `framework`, с nginx из шага 5 |
+| `SEED_LABS` | `false`, демонстрационные лабораторные не добавляются |
 
-`SMTP_HOST` и `SMTP_PORT` должны соответствовать выданным настройкам почты.
-В шаблоне указан Яндекс с портом 465 и SSL, как в переданном файле настроек ВМ:
+JWT-ключ сохраняйте при следующих обновлениях. Его смена завершает действие
+старых access-токенов. Новый слой авторизации также потребует повторного входа
+для токенов, выданных старой версией без `uid`.
 
-```dotenv
-SMTP_HOST=smtp.yandex.ru
-SMTP_PORT=465
-SMTP_STARTTLS=false
-SMTP_SSL=true
+`ADMIN_EMAIL` и `ADMIN_PASSWORD` используются при создании администратора.
+Существующий аккаунт не получает новый пароль или роль из `.env`. Для первой
+настройки выберите email, ещё не занятый обычным пользователем, либо используйте
+данные существующего администратора.
+
+### Подключить файл к существующему Compose
+
+В `/root/net-genius/docker-compose.yml` добавьте **только `env_file`** в сервис
+`backend` рядом с `build` и `environment`:
+
+```yaml
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    # Существующие environment, depends_on и restart оставьте на месте.
 ```
 
-Если SMTP-сервер использует порт 587 с STARTTLS:
+Существующие `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` и
+`SPRING_DATASOURCE_PASSWORD` в `backend.environment` сохраняются. Они имеют
+приоритет над настройками файла. Адрес остаётся
+`jdbc:postgresql://database:5432/netgenius`.
 
-```dotenv
-SMTP_PORT=587
-SMTP_STARTTLS=true
-SMTP_SSL=false
-```
+В сервисе `database` сохраните прежние `POSTGRES_*` и подключение
+`postgres_data:/var/lib/postgresql/data`. Значения пароля БД здесь и в бэкенде
+уже согласованы; для первого обновления их не меняем. Смена переменной
+`POSTGRES_PASSWORD` сама по себе не меняет пароль существующей БД.
 
-`SMTP_FROM` можно оставить пустым: отправителем будет `SMTP_USERNAME`.
-Другой адрес должен быть разрешён почтовым провайдером для этого ящика.
-
-JWT-ключ сохраняется между перезапусками. Его замена делает ранее выданные
-access-токены недействительными. `ADMIN_PASSWORD` используется только при
-создании нового администратора; пароль существующего аккаунта меняется через API.
-Выберите новый email либо email существующего администратора. Email обычного
-пользователя не превращает его в администратора через настройки окружения.
-`SEED_LABS=false` оставляет демонстрационные лабораторные выключенными.
-
-Изменение `POSTGRES_*` в `.env` не меняет пароль или имя уже созданной базы.
-Для существующей БД используйте прежние значения и прежний Docker volume.
-Запускайте Compose из того же каталога и с тем же именем проекта, что и раньше:
-так сохранится подключение к существующему `postgres_data`.
-
-## 3. Запустить
+`APP_BIND_ADDRESS`, `APP_PORT` и `POSTGRES_*` из standalone-шаблона на этой ВМ
+добавлять не нужно. Новые сети, контейнер PostgreSQL и публикация порта 8080
+тоже не нужны.
 
 ```bash
 docker compose config --quiet
-docker compose up -d --build --wait --wait-timeout 180
+```
+
+Это проверяет Compose, не печатая пароли. Файл `.env` сам по себе не передаётся
+контейнеру: для этого и добавляется `env_file`.
+
+## 4. Собрать бэкенд до замены работающего контейнера
+
+Сначала сохраните текущий образ под отдельным именем и соберите новый:
+
+```bash
+cd /root/net-genius
+docker image tag "$(docker compose images -q backend)" net-genius-backend:before-vm-deploy
+docker compose build backend
+```
+
+Работающий контейнер от сборки не меняется. Ошибка сборки не требует перезапуска
+ни БД, ни фронтенда, ни nginx.
+
+Перед следующим шагом требуется проверить и обновить фронтенд. В опубликованной
+сборке обнаружены обращения к `http://212.67.12.82:8080`, профиль с токеном
+в query-параметре и изменение профиля через `PUT /auth/profile`.
+Для сайта на HTTPS фронтенд должен обращаться к относительному `/api`,
+передавать access-токен заголовком `Authorization: Bearer ...` и использовать
+`PUT /users/profile` для редактирования профиля. Порт 8080 наружу не открываем.
+
+Совместимые маршруты входа и регистрации помогают старому клиенту, но не
+исправляют эти обращения фронтенда. До проверки пользовательских сценариев
+обновление работающего контейнера не считаем готовым. Наличие `pong` этого
+не проверяет. Письма также требуют существующих на фронте страниц
+`/confirm-email?token=...` и `/reset-password?token=...`.
+
+## 5. Обновить бэкенд и nginx
+
+Новый бэкенд при старте обновляет схему существующей БД через Hibernate и
+`db/profile-schema.sql`. Версионированных миграций пока нет. Это проверялось
+на H2; первая проверка PostgreSQL выполняется на ВМ, поэтому резервная копия
+из шага 1 обязательна.
+
+Пересоздайте **только бэкенд**. Будет короткий перерыв API:
+
+```bash
+cd /root/net-genius
+docker compose up -d --no-deps --no-build backend
+docker compose logs --tail=100 backend
+```
+
+БД, frontend и nginx этой командой не пересоздаются. При ошибке старта не
+продолжайте настройку наугад; сохраните текст ошибки без секретов.
+
+Готовая конфигурация `backend/deploy/nginx.vm.conf` основана на присланном
+конфиге ВМ. Она сохраняет домен, сертификаты и выдачу фронтенда, добавляет
+передачу `/api-docs/swagger-config` в бэкенд, заголовки прокси и размер
+multipart-запроса 6 МиБ. До замены сверьте её с актуальным файлом ВМ:
+
+```bash
+diff -u nginx/nginx.conf backend/deploy/nginx.vm.conf
+```
+
+У `diff` код 1 означает найденные различия. Если после присланной версии
+на сервере добавляли другие маршруты, перенесите только нужные правки в
+существующий конфиг. При использовании подготовленного файла записывайте его
+в уже существующий `nginx/nginx.conf`, чтобы сохранить Docker bind mount:
+
+```bash
+cat backend/deploy/nginx.vm.conf > nginx/nginx.conf
+docker compose exec -T nginx nginx -t
+```
+
+Только если `nginx -t` завершился успешно, перечитайте конфигурацию:
+
+```bash
+docker compose exec -T nginx nginx -s reload
+```
+
+Reload также заставляет nginx заново разрешить имя `backend` после замены
+контейнера. `systemctl nginx` здесь не используется: nginx работает в Docker.
+
+При ошибке `nginx -t` рабочий nginx продолжает использовать прежний конфиг.
+Верните исходный файл из архива и повторите проверку. Не перезапускайте nginx
+с невалидным файлом.
+
+## 6. Проверить результат
+
+```bash
+cd /root/net-genius
 docker compose ps
-curl --fail http://127.0.0.1:8080/auth/ping
+curl --fail --show-error https://www.simultech.ru/api/auth/ping
+curl --fail --show-error https://www.simultech.ru/api-docs/swagger-config
+curl --fail --show-error https://www.simultech.ru/api-docs
 ```
 
-Последняя команда должна вернуть `pong`. Если меняли `APP_PORT`, используйте
-его вместо 8080. `--wait` ожидает прохождения проверок PostgreSQL и приложения.
-Команда `config --quiet` проверяет конфигурацию, не печатая секреты.
+Ожидаются `pong`, JSON настроек Swagger и JSON схемы API. Swagger остаётся по
+адресу `https://www.simultech.ru/swagger-ui/index.html`; сервер запросов — `/api`.
+Прямой `curl http://127.0.0.1:8080/...` в этой схеме не подходит: порт бэкенда
+не опубликован на ВМ.
 
-PostgreSQL доступен приложению по `postgres:5432` внутри Docker-сети.
-Порт базы не публикуется на ВМ. API публикуется на `APP_PORT` (по умолчанию 8080).
-Если nginx установлен на этой же ВМ, задайте `APP_BIND_ADDRESS=127.0.0.1`
-и проксируйте запросы на `http://127.0.0.1:8080`. Для прямого доступа к API
-используется `APP_BIND_ADDRESS=0.0.0.0`. HTTPS настраивается на reverse proxy.
+Затем проверьте реальный сценарий: регистрация с фронтенда → письмо →
+подтверждение email → вход → профиль. Отдельно проверьте письмо с документом
+преподавателя и его одобрение администратором. Почта в тестах подменяется;
+реальная доставка и фронтенд на ВМ автоматически не проверялись.
 
-Swagger при прямом доступе: `http://АДРЕС_ВМ:8080/swagger-ui/index.html`.
-Текущий адрес на ВМ: `https://www.simultech.ru/swagger-ui/index.html`.
-На фронтенде должны существовать страницы `/confirm-email?token=...`
-и `/reset-password?token=...`.
-
-### Текущая ВМ: Swagger в корне домена, API через `/api`
-
-Адрес страницы Swagger и адрес запросов к API различаются:
-
-- Swagger UI: `/swagger-ui/index.html`.
-- Конфигурация Swagger: `/api-docs/swagger-config` (должна возвращать JSON).
-- OpenAPI-схема: `/api-docs` (должна возвращать JSON).
-- Запросы из Try it out: `/api/...`.
-
-В `.env` для этой схемы укажите:
-
-```dotenv
-FRONTEND_URL=https://www.simultech.ru
-APP_BIND_ADDRESS=127.0.0.1
-PUBLIC_API_URL=/api
-FORWARD_HEADERS_STRATEGY=framework
-```
-
-В существующем `server {}` nginx сверьте location для Swagger, схемы и API
-с [`deploy/nginx-api.conf`](deploy/nginx-api.conf). Обновите соответствующие
-блоки, добавив недостающие. Корневые `/swagger-ui/` и `/api-docs` проксируются
-с исходным путём; `/api/` проксируется со снятием этого префикса. Только API-location
-передаёт `X-Forwarded-Prefix: /api`, а корневые Swagger/schema location очищают его.
-Если меняли `APP_PORT`, измените также порт во всех `proxy_pass`.
-
-Важен весь префикс `/api-docs`, включая `/api-docs/swagger-config`. Одного
-точного location для `/api-docs` недостаточно: вложенный URL может попасть
-на React-фронтенд и вернуть HTML вместо JSON.
-
-`framework` используется с доверенным nginx и закрытым прямым доступом к приложению;
-для прямого доступа к API в шаблоне остаётся `FORWARD_HEADERS_STRATEGY=none`.
-Настройки proxy headers соответствуют [рекомендациям springdoc](https://springdoc.org/v2/#how-can-i-deploy-springdoc-openapi-starter-webmvc-ui-behind-a-reverse-proxy).
-
-После правки nginx и `.env`:
+Логи нужных сервисов:
 
 ```bash
-sudo nginx -t
-sudo systemctl reload nginx
-docker compose up -d --wait --wait-timeout 180
-curl --fail https://www.simultech.ru/api/auth/ping
-curl --fail https://www.simultech.ru/api-docs/swagger-config
+docker compose logs --tail=100 backend
+docker compose logs --tail=100 nginx
 ```
 
-Первая команда curl должна вернуть `pong`, вторая — JSON с настройками Swagger.
-Откройте `https://www.simultech.ru/swagger-ui/index.html` и проверьте Try it out.
-При прямом доступе без nginx оставьте `PUBLIC_API_URL` пустым: Swagger возьмёт
-адрес из запроса. Размещение Swagger целиком под `/api/swagger-ui/` тоже
-поддерживается API-location, но текущий адрес страницы на ВМ остаётся корневым.
+## Последующие обновления и восстановление
 
-## 4. Проверить почту и вход
-
-1. Зарегистрировать тестового пользователя через фронтенд или Swagger.
-2. Убедиться, что письмо пришло и ссылка ведёт на `FRONTEND_URL`.
-3. Подтвердить email и войти; проверить `GET /profile/me` с access-токеном.
-4. Отправить заявку преподавателя с PDF/JPG/PNG/DOC и проверить письмо
-   с вложением на `TEACHER_REQUEST_EMAIL`.
-5. Войти администратором, открыть `GET /admin/verifications` и одобрить заявку
-   через `POST /admin/verifications/{id}/approve`.
-
-Доступность `/auth/ping` проверяет работу API, но не доставку писем.
-Ошибки запуска и SMTP смотрите в логах:
+После первой успешной настройки:
 
 ```bash
-docker compose logs --tail=100 app
-docker compose logs --tail=100 postgres
-```
-
-## Последующие обновления
-
-```bash
-git pull --ff-only origin main
+cd /root/net-genius
+git -C backend pull --ff-only origin main
 docker compose config --quiet
-docker compose up -d --build --wait --wait-timeout 180
+docker compose build backend
+docker compose up -d --no-deps --no-build backend
+docker compose exec -T nginx nginx -t
+docker compose exec -T nginx nginx -s reload
 ```
 
-`.env` заполняется один раз и сохраняется при `git pull`. После изменения
-секретов снова выполните `docker compose up -d`: простой `restart` не обновляет
-окружение существующего контейнера. Данные PostgreSQL сохраняются в volume.
-`docker compose down -v` удаляет этот volume вместе с данными базы.
+Перед изменениями схемы БД делайте новый дамп. Изменения `.env` применяются
+через `up -d --no-deps --no-build backend`, а не обычный `restart`.
 
-Перед обновлением существующей базы сделайте резервную копию. Например:
+Для восстановления есть старый код и конфиги в архиве, дамп БД и образ
+`net-genius-backend:before-vm-deploy`. Откат контейнера не откатывает изменения
+схемы автоматически; конкретные действия зависят от ошибки. Дамп не следует
+восстанавливать поверх работающей БД без отдельного решения.
 
-```bash
-mkdir -p backups
-docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > backups/before-update.dump
-```
-
-Каталог `backups/` исключён из Git и Docker build context. Сохраняйте копии
-под отдельными именами и переносите нужные резервные копии за пределы ВМ.
-
-Сейчас схема обновляется Hibernate и `db/profile-schema.sql`; полноценные
-версионированные миграции остаются отдельной задачей.
+Не выполняйте `docker compose down -v`: ключ `-v` удаляет volume с данными.
+Не меняйте имя проекта Compose и место его запуска: существующий
+`postgres_data` должен остаться тем же.

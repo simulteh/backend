@@ -31,14 +31,26 @@ public class AuthService {
     private final AuditService auditService;
 
     public TokenResponse login(String email, String password) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password));
-        UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
+        UserDetailsImpl principal = authenticate(email, password);
 
         String accessToken = jwtCore.generateAccessToken(principal);
         String refreshToken = refreshTokenService.issue(principal.getId());
         auditService.log(principal.getId(), "USER", principal.getId(), "LOGIN");
         return TokenResponse.bearer(accessToken, refreshToken, jwtCore.getAccessTtlMs());
+    }
+
+    /** Старый клиент принимает только строку JWT и не умеет сохранять refresh-токен. */
+    public String loginLegacyAccessToken(String email, String password) {
+        UserDetailsImpl principal = authenticate(email, password);
+        String accessToken = jwtCore.generateAccessToken(principal);
+        auditService.log(principal.getId(), "USER", principal.getId(), "LOGIN");
+        return accessToken;
+    }
+
+    private UserDetailsImpl authenticate(String email, String password) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password));
+        return (UserDetailsImpl) authentication.getPrincipal();
     }
 
     @Transactional

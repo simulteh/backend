@@ -6,6 +6,7 @@ import com.simul_tech.netgenius.dto.SignInRequest;
 import com.simul_tech.netgenius.dto.SignUpRequest;
 import com.simul_tech.netgenius.dto.auth.*;
 import com.simul_tech.netgenius.dto.common.MessageResponse;
+import com.simul_tech.netgenius.exceptions.InvalidRequestException;
 import com.simul_tech.netgenius.services.AuthService;
 import com.simul_tech.netgenius.services.CurrentUserService;
 import com.simul_tech.netgenius.services.UserService;
@@ -16,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -49,6 +51,28 @@ public class SecurityController {
     @Operation(summary = "Вход: возвращает access- и refresh-токены")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody SignInRequest request) {
         return ResponseEntity.ok(authService.login(request.getEmail(), request.getPassword()));
+    }
+
+    @PostMapping("/sign-up")
+    @Operation(summary = "Совместимость со старым клиентом: регистрация; используйте /auth/register", deprecated = true)
+    public ResponseEntity<String> legacyRegister(@Valid @RequestBody SignUpRequest request) {
+        try {
+            userService.signUpUser(request);
+            return ResponseEntity.ok("Пользователь зарегистрирован");
+        } catch (InvalidRequestException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PostMapping("/sign-in")
+    @Operation(summary = "Совместимость со старым клиентом: JWT строкой; используйте /auth/login", deprecated = true)
+    public ResponseEntity<String> legacyLogin(@Valid @RequestBody SignInRequest request) {
+        try {
+            return ResponseEntity.ok(authService.loginLegacyAccessToken(request.getEmail(), request.getPassword()));
+        } catch (AuthenticationException ex) {
+            // Старый клиент хранит тело успешного ответа как строку и ожидает пустой 401.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     @PostMapping("/refresh")
@@ -94,6 +118,13 @@ public class SecurityController {
         return ResponseEntity.ok(MessageResponse.of("Если email существует, ссылка для сброса отправлена"));
     }
 
+    @PostMapping("/forgot")
+    @Operation(summary = "Совместимость со старым клиентом: запрос сброса; используйте /auth/forgot-password", deprecated = true)
+    public ResponseEntity<MessageResponse> legacyForgotPassword(@Valid @RequestBody PasswordResetRequest request) {
+        authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok(MessageResponse.of("If the email exists, a password reset link has been sent"));
+    }
+
     @PostMapping("/resend-confirmation")
     @Operation(summary = "Повторно отправить подтверждение email; существование адреса не раскрывается")
     public ResponseEntity<MessageResponse> resendConfirmation(@Valid @RequestBody PasswordResetRequest request) {
@@ -106,6 +137,13 @@ public class SecurityController {
     public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody PasswordResetDTO request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(MessageResponse.of("Пароль успешно сброшен"));
+    }
+
+    @PostMapping("/reset")
+    @Operation(summary = "Совместимость со старым клиентом: новый пароль; используйте /auth/reset-password", deprecated = true)
+    public ResponseEntity<MessageResponse> legacyResetPassword(@Valid @RequestBody PasswordResetDTO request) {
+        userService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(MessageResponse.of("Password has been reset successfully"));
     }
 
     @GetMapping("/me")

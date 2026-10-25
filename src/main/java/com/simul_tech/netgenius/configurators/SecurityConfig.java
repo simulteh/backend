@@ -34,7 +34,8 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_AUTH_POST = {
             "/auth/register", "/auth/login", "/auth/refresh", "/auth/logout",
-            "/auth/confirm-email", "/auth/forgot-password", "/auth/reset-password", "/auth/resend-confirmation"
+            "/auth/confirm-email", "/auth/forgot-password", "/auth/reset-password", "/auth/resend-confirmation",
+            "/auth/sign-up", "/auth/sign-in", "/auth/forgot", "/auth/reset"
     };
 
     private static final String[] PUBLIC_DOCS = {
