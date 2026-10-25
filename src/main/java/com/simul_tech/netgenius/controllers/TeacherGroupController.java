@@ -10,6 +10,7 @@ import com.simul_tech.netgenius.dto.group.StudentResponse;
 import com.simul_tech.netgenius.dto.group.UpdateGroupRequest;
 import com.simul_tech.netgenius.services.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +33,7 @@ public class TeacherGroupController {
 
     @PostMapping("/groups")
     @Operation(summary = "Создать группу")
+    @ApiResponse(responseCode = "201", description = "Группа создана")
     public ResponseEntity<GroupResponse> createGroup(@Valid @RequestBody CreateGroupRequest request) {
         GroupResponse group = groupService.createGroup(request.groupName(), request.universityId());
         return ResponseEntity.status(HttpStatus.CREATED).body(group);
@@ -64,6 +66,7 @@ public class TeacherGroupController {
 
     @PostMapping("/groups/{id}/invite")
     @Operation(summary = "Пригласить студента в группу")
+    @ApiResponse(responseCode = "201", description = "Приглашение создано")
     public ResponseEntity<InvitationResponse> invite(@PathVariable Long id,
                                                      @Valid @RequestBody InviteRequest request) {
         InvitationResponse invitation = groupService.invite(id, request.email(), request.studentId());

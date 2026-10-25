@@ -46,6 +46,7 @@ class DeploymentConfigurationTest {
             assertThat(environment.getProperty("app.mail.from")).isEqualTo("mail@example.test");
             assertThat(environment.getProperty("app.teacher-request-email")).isEqualTo("review@example.test");
             assertThat(environment.getProperty("server.forward-headers-strategy")).isEqualTo("none");
+            assertThat(environment.getProperty("springdoc.swagger-ui.disable-swagger-default-url")).isEqualTo("true");
             assertThat(context.getBean(OpenAPI.class).getServers()).isNull();
 
             JavaMailSenderImpl sender = context.getBean(JavaMailSenderImpl.class);

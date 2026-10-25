@@ -339,8 +339,45 @@ class CabinetApiTest {
     }
 
     @Test
-    void swaggerDescribesProfileWith401InsteadOfGeneric400AndMultipartUpload() throws Exception {
+    void swaggerDescribesSuccessResponsesSchemasAndAuthentication() throws Exception {
         JsonNode api = read(mvc.perform(get("/v3/api-docs")).andExpect(status().isOk()).andReturn());
+        api.path("paths").properties().forEach(path -> path.getValue().properties().forEach(method -> {
+            JsonNode documented = method.getValue().path("responses");
+            Iterable<String> responseCodes = documented::fieldNames;
+            assertThat(responseCodes).as("Swagger must document success for %s %s", method.getKey(), path.getKey())
+                    .anyMatch(code -> code.startsWith("2"));
+        }));
+        for (String path : List.of("/auth/register", "/groups", "/verification/student", "/verification/teacher",
+                "/teacher/groups", "/teacher/groups/{id}/invite", "/teacher/university-request",
+                "/admin/universities", "/admin/licenses/create", "/admin/licenses/batch")) {
+            JsonNode created = api.path("paths").path(path).path("post").path("responses");
+            assertThat(created.has("201")).as("POST %s creates a resource", path).isTrue();
+            assertThat(created.has("200")).as("POST %s must not advertise 200", path).isFalse();
+            assertThat(created.path("201").path("content").isEmpty()).isFalse();
+        }
+        JsonNode deleted = api.path("paths").path("/admin/universities/{id}").path("delete").path("responses");
+        assertThat(deleted.has("204")).isTrue();
+        assertThat(deleted.has("200")).isFalse();
+        assertThat(deleted.path("204").has("content")).isFalse();
+        for (String path : List.of("/groups", "/groups/my")) {
+            JsonNode schema = api.path("paths").path(path).path("get").path("responses").path("200")
+                    .path("content").path("application/json").path("schema");
+            assertThat(schema.path("type").asText()).isEqualTo("array");
+            assertThat(schema.path("items").path("$ref").asText()).startsWith("#/components/schemas/Cabinet");
+        }
+        assertThat(api.path("paths").path("/groups/{id}").path("get").path("responses").path("200")
+                .path("content").path("application/json").path("schema").path("$ref").asText())
+                .isEqualTo("#/components/schemas/CabinetGroupDetail");
+        assertThat(api.path("security").isMissingNode()).isTrue();
+        for (String path : List.of("/auth/login", "/auth/register", "/auth/refresh")) {
+            assertThat(api.path("paths").path(path).path("post").path("security").isEmpty()).isTrue();
+        }
+        for (String path : List.of("/groups", "/auth/me", "/users/me", "/admin/licenses")) {
+            assertThat(api.path("paths").path(path).path("get").path("security").get(0).has("bearerAuth"))
+                    .as("GET %s requires a Bearer token", path).isTrue();
+        }
+        assertThat(api.path("paths").path("/auth/login").path("post").path("responses").has("401")).isTrue();
+        assertThat(api.path("paths").path("/auth/refresh").path("post").path("responses").has("400")).isTrue();
         JsonNode responses = api.path("paths").path("/profile/me").path("get").path("responses");
         assertThat(responses.has("401")).isTrue();
         assertThat(responses.has("400")).isFalse();

@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 
 @SpringBootTest(properties = {
         "springdoc.api-docs.path=/api-docs",
@@ -44,7 +45,8 @@ class SwaggerProxyTest {
                         .value("https://api.example.test/api/swagger-ui/oauth2-redirect.html"));
         mvc.perform(proxied("/swagger-ui/swagger-initializer.js"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("/api/api-docs/swagger-config")));
+                .andExpect(content().string(containsString("/api/api-docs/swagger-config")))
+                .andExpect(content().string(not(containsString("petstore.swagger.io"))));
     }
 
     @Test

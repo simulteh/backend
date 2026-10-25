@@ -9,6 +9,8 @@ import com.simul_tech.netgenius.exceptions.BadRequestException;
 import com.simul_tech.netgenius.models.University;
 import com.simul_tech.netgenius.services.UniversityService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -62,6 +64,7 @@ public class AdminUniversityController {
 
     @PostMapping("/universities")
     @Operation(summary = "Создать вуз")
+    @ApiResponse(responseCode = "201", description = "Вуз создан")
     public ResponseEntity<UniversityResponse> create(
             @Valid @RequestBody CreateUniversityRequest request) {
         University university = universityService.createUniversity(
@@ -81,6 +84,7 @@ public class AdminUniversityController {
 
     @DeleteMapping("/universities/{id}")
     @Operation(summary = "Удалить вуз")
+    @ApiResponse(responseCode = "204", description = "Вуз удалён; тело ответа пустое", content = @Content)
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         universityService.deleteUniversity(id);
         return ResponseEntity.noContent().build();
