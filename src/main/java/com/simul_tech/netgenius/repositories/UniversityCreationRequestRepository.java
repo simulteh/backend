@@ -8,5 +8,4 @@ import java.util.List;
 
 public interface UniversityCreationRequestRepository extends JpaRepository<UniversityCreationRequest, Long> {
     List<UniversityCreationRequest> findByStatus(VerificationStatus status);
-    List<UniversityCreationRequest> findByTeacherId(Long teacherId);
 }

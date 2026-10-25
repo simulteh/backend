@@ -1,10 +1,9 @@
 package com.simul_tech.netgenius.services;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 @Service
-@Slf4j
 public class EmailTemplateService {
     public String buildPasswordResetEmail(String resetLink, String userName) {
         return """
@@ -76,30 +75,30 @@ public class EmailTemplateService {
                         </p>
                         <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 15px; margin: 20px 0;">
                             <strong>Внимание!</strong><br>
-                            Ссылка действительна в течение 1 часа.
+                            Ссылка действительна в течение 24 часов.
                             Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
                         </div>
                     </div>
                     <div class="footer">
-                        <p>С уважением,<br><strong>Команда NetGenius</strong></p>
+                        <p>С уважением,<br><strong>Команда СИМУЛТЕХ</strong></p>
                     </div>
                 </div>
             </body>
             </html>
             """.formatted(
-                userName != null ? ", " + userName : "",
-                resetLink,
-                resetLink
+                greeting(userName),
+                HtmlUtils.htmlEscape(resetLink),
+                HtmlUtils.htmlEscape(resetLink)
         );
     }
 
-    public String buildVerificationEmail(String verifyLink, String userName) {
+    public String buildVerificationEmail(String verifyLink, String userName, String websiteUrl) {
         return """
         <!DOCTYPE html>
         <html lang="ru">
         <head>
             <meta charset="UTF-8">
-            <title>Подтверждение email</title>
+            <title>Подтверждение регистрации — СИМУЛТЕХ</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -118,7 +117,7 @@ public class EmailTemplateService {
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 }
                 .header {
-                    background: #4f46e5; /* ← тот же цвет, что и в сбросе */
+                    background: #4f46e5;
                     padding: 30px;
                     text-align: center;
                     color: white;
@@ -128,7 +127,7 @@ public class EmailTemplateService {
                 }
                 .button {
                     display: inline-block;
-                    background: #4f46e5; /* ← тот же цвет */
+                    background: #4f46e5;
                     color: white;
                     text-decoration: none;
                     padding: 12px 24px;
@@ -148,14 +147,22 @@ public class EmailTemplateService {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>Подтверждение email</h1>
+                    <h1>СИМУЛТЕХ</h1>
                 </div>
                 <div class="content">
                     <p><strong>Здравствуйте%s!</strong></p>
-                    <p>Спасибо за регистрацию в NetGenius!</p>
-                    <p>Пожалуйста, подтвердите ваш email, нажав на кнопку ниже:</p>
+                    <p>Благодарим вас за интерес к симуляторам СИМУЛТЕХ!</p>
+                    <p>После завершения регистрации и подтверждения статуса студента
+                        вам будет доступна онлайн демо-версия.</p>
+                    <p>Если в вашем вузе ещё не проводят практику на базе нашего симулятора
+                        компьютерных сетей, передайте преподавателям информацию о такой возможности.
+                        После обучения студенты могут стать сертифицированными пользователями.</p>
+                    <p>Если вы хотите зарегистрироваться как преподаватель, перейдите в личный профиль
+                        и нажмите кнопку «Получить статус преподавателя».</p>
+                    <p>Все подробности — на <a href="%s">сайте СИМУЛТЕХ</a>.</p>
+                    <p>Для подтверждения регистрации перейдите по ссылке:</p>
                     <div style="text-align: center;">
-                        <a href="%s" class="button">Подтвердить email</a>
+                        <a href="%s" class="button">Подтвердить регистрацию</a>
                     </div>
                     <p>Или скопируйте эту ссылку в браузер:</p>
                     <p style="background: #f8f9fa; padding: 10px; border-radius: 4px; word-break: break-all;">
@@ -168,15 +175,20 @@ public class EmailTemplateService {
                     </div>
                 </div>
                 <div class="footer">
-                    <p>С уважением,<br><strong>Команда NetGenius</strong></p>
+                    <p>С уважением,<br><strong>Команда СИМУЛТЕХ</strong></p>
                 </div>
             </div>
         </body>
         </html>
         """.formatted(
-                userName != null ? ", " + userName : "",
-                verifyLink,
-                verifyLink
+                greeting(userName),
+                HtmlUtils.htmlEscape(websiteUrl),
+                HtmlUtils.htmlEscape(verifyLink),
+                HtmlUtils.htmlEscape(verifyLink)
         );
+    }
+
+    private String greeting(String userName) {
+        return userName == null || userName.isBlank() ? "" : ", " + HtmlUtils.htmlEscape(userName);
     }
 }

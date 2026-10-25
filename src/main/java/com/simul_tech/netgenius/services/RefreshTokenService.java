@@ -3,6 +3,7 @@ package com.simul_tech.netgenius.services;
 import com.simul_tech.netgenius.exceptions.InvalidTokenException;
 import com.simul_tech.netgenius.models.RefreshToken;
 import com.simul_tech.netgenius.repositories.RefreshTokenRepository;
+import com.simul_tech.netgenius.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,12 +19,14 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
 
     @Value("${app.jwt.refresh-ttl-days:30}")
     private long refreshTtlDays;
 
     @Transactional
     public String issue(Long userId) {
+        lockUser(userId);
         RefreshToken token = new RefreshToken(userId, Duration.ofDays(refreshTtlDays));
         refreshTokenRepository.save(token);
         return token.getRawToken();
@@ -32,7 +35,7 @@ public class RefreshTokenService {
     /** Проверяет refresh-токен, отзывает его и выпускает новый (ротация). Возвращает новый «сырой» токен. */
     @Transactional
     public RotationResult rotate(String rawToken) {
-        RefreshToken current = validate(rawToken);
+        RefreshToken current = findUsableForUpdate(rawToken);
         current.setRevoked(true);
         refreshTokenRepository.save(current);
 
@@ -41,12 +44,24 @@ public class RefreshTokenService {
         return new RotationResult(current.getUserId(), next.getRawToken());
     }
 
-    @Transactional(readOnly = true)
-    public RefreshToken validate(String rawToken) {
+    /** Блокировка владельца сериализует logout и обновления всех его сессий. */
+    @Transactional
+    public Long revokeAllForToken(String rawToken) {
+        RefreshToken current = findUsableForUpdate(rawToken);
+        refreshTokenRepository.revokeAllForUser(current.getUserId());
+        return current.getUserId();
+    }
+
+    private RefreshToken findUsableForUpdate(String rawToken) {
         if (rawToken == null || rawToken.isBlank()) {
             throw new InvalidTokenException("Refresh-токен не передан");
         }
-        RefreshToken token = refreshTokenRepository.findByTokenHash(RefreshToken.hash(rawToken))
+        String hash = RefreshToken.hash(rawToken);
+        // Проекция не помещает токен в persistence context до ожидания блокировки владельца.
+        Long userId = refreshTokenRepository.findUserIdByTokenHash(hash)
+                .orElseThrow(() -> new InvalidTokenException("Недействительный refresh-токен"));
+        lockUser(userId);
+        RefreshToken token = refreshTokenRepository.findByTokenHashForUpdate(hash)
                 .orElseThrow(() -> new InvalidTokenException("Недействительный refresh-токен"));
         if (!token.isUsable()) {
             throw new InvalidTokenException("Refresh-токен истёк или отозван");
@@ -56,7 +71,13 @@ public class RefreshTokenService {
 
     @Transactional
     public void revokeAllForUser(Long userId) {
+        lockUser(userId);
         refreshTokenRepository.revokeAllForUser(userId);
+    }
+
+    private void lockUser(Long userId) {
+        userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new InvalidTokenException("Владелец refresh-токена не найден"));
     }
 
     /** Результат ротации: владелец и новый «сырой» refresh-токен. */

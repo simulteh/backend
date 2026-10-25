@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-/** Учебная группа. Всегда принадлежит вузу и преподавателю. */
+/** Учебная группа преподавателя: организация текстом или существующий вуз LMS. */
 @Entity
 @Getter
 @Setter
@@ -22,8 +22,14 @@ public class Group {
     @Column(name = "teacher_id", nullable = false)
     private Long teacherId;
 
-    @Column(name = "university_id", nullable = false)
+    @Column(name = "university_id")
     private Long universityId;
+
+    @Column(name = "organization", length = 255)
+    private String organization;
+
+    @Column(name = "invite_code", unique = true, length = 64)
+    private String inviteCode;
 
     @Column(name = "group_name", nullable = false)
     private String groupName;
@@ -34,5 +40,8 @@ public class Group {
     @PrePersist
     void onCreate() {
         createdAt = Instant.now();
+        if (inviteCode == null) {
+            inviteCode = com.simul_tech.netgenius.utils.TokenGenerator.urlSafe(24);
+        }
     }
 }

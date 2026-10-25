@@ -1,12 +1,16 @@
 package com.simul_tech.netgenius.services;
 
 import com.simul_tech.netgenius.exceptions.EmailSenderException;
+import com.simul_tech.netgenius.models.User;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Service
@@ -15,45 +19,90 @@ public class MailSenderService {
     private final JavaMailSender javaMailSender;
     private final EmailTemplateService emailTemplateService;
 
+    @Value("${app.frontend-url:https://simulteh.com}")
+    private String frontendUrl;
+
+    @Value("${app.website-url:${app.frontend-url:https://simulteh.com}}")
+    private String websiteUrl;
+
+    @Value("${app.teacher-request-email:}")
+    private String teacherRequestEmail;
+
+    @Value("${app.mail.from:${spring.mail.username:abtserenov@edu.hse.ru}}")
+    private String from;
+
     public void sendPasswordResetEmail(String email, String token, String userName) {
-        String resetLink = "https://simulteh.com/reset-password?token=" + token;
-        String subject = "Сброс пароля - NetGenius";
+        String resetLink = frontendLink("/reset-password", token);
+        String subject = "Сброс пароля — СИМУЛТЕХ";
 
-        MimeMessage message = buildMessage(subject, email, resetLink, userName);
+        MimeMessage message = buildMessage(subject, email,
+                emailTemplateService.buildPasswordResetEmail(resetLink, userName));
 
-        javaMailSender.send(message);
+        send(message);
         log.info("Письмо для сброса пароля отправлено на: {}", email);
     }
 
     public void sendCreationEmail(String email, String token, String userName) {
-        String creationLink = "https://simulteh.com/confirm?token=" + token;
-        String subject = "Подтверждение регистрации - NetGenius";
+        String creationLink = frontendLink("/confirm-email", token);
+        String subject = "Подтверждение регистрации — СИМУЛТЕХ";
 
-        MimeMessage message = buildMessage(subject, email, creationLink, userName);
+        MimeMessage message = buildMessage(subject, email,
+                emailTemplateService.buildVerificationEmail(creationLink, userName, websiteUrl));
 
-        javaMailSender.send(message);
+        send(message);
         log.info("Письмо для подтверждения регистрации отправлено на: {}", email);
 
     }
 
-    private MimeMessage buildMessage(String subject, String email, String link, String userName) {
+    public void sendTeacherRequest(User user, Long requestId, String fullName, String organization,
+                                   String filename, String contentType, byte[] contents) {
+        if (teacherRequestEmail == null || teacherRequestEmail.isBlank()) {
+            throw new EmailSenderException("Не настроен адрес получения заявок преподавателей");
+        }
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(from, "СИМУЛТЕХ");
+            helper.setTo(teacherRequestEmail);
+            helper.setReplyTo(user.getEmail());
+            helper.setSubject("Заявка на статус преподавателя — СИМУЛТЕХ");
+            helper.setText("Заявка № " + requestId + "\nID пользователя: " + user.getId()
+                    + "\nEmail: " + user.getEmail() + "\nФИО: " + fullName
+                    + "\nОрганизация: " + organization
+                    + "\n\nРоль TEACHER выдаётся администратором после проверки документа.", false);
+            helper.addAttachment(filename, new ByteArrayResource(contents), contentType);
+            send(message);
+        } catch (EmailSenderException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new EmailSenderException("Не удалось подготовить заявку преподавателя");
+        }
+    }
+
+    private String frontendLink(String path, String token) {
+        return UriComponentsBuilder.fromUriString(frontendUrl.replaceAll("/+$", ""))
+                .path(path).queryParam("token", token).build().encode().toUriString();
+    }
+
+    private void send(MimeMessage message) {
+        try {
+            javaMailSender.send(message);
+        } catch (org.springframework.mail.MailException e) {
+            throw new EmailSenderException("Не удалось отправить письмо");
+        }
+    }
+
+    private MimeMessage buildMessage(String subject, String email, String htmlContent) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
 
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setSubject(subject);
-            helper.setFrom("abtserenov@edu.hse.ru", "NetGenius Support");
+            helper.setFrom(from, "СИМУЛТЕХ");
             helper.setTo(email);
 
-            String emailContent;
-            if (subject.equals("Подтверждение регистрации - NetGenius")) {
-                emailContent = emailTemplateService.buildVerificationEmail(link, userName);
-            } else {
-                emailContent = emailTemplateService.buildPasswordResetEmail(link, userName);
-            }
-
-            helper.setText(emailContent, true);
+            helper.setText(htmlContent, true);
 
             return message;
         } catch (Exception e) {

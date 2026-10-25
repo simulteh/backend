@@ -3,11 +3,11 @@ package com.simul_tech.netgenius.models;
 import com.simul_tech.netgenius.impls.TokenDetails;
 import com.simul_tech.netgenius.impls.TokenType;
 import com.simul_tech.netgenius.utils.TokenGenerator;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import java.time.Duration;
 import java.time.Instant;
 

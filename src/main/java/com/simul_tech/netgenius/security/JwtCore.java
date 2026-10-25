@@ -2,8 +2,8 @@ package com.simul_tech.netgenius.security;
 
 import com.simul_tech.netgenius.impls.UserDetailsImpl;
 import io.jsonwebtoken.*;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -19,12 +19,8 @@ public class JwtCore {
 
     /** Время жизни access-токена в мс (по умолчанию 15 минут). */
     @Value("${app.jwt.access-ttl-ms:900000}")
+    @Getter
     private long accessTtlMs;
-
-    public String generateToken(Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return generateAccessToken(userDetails);
-    }
 
     public String generateAccessToken(UserDetailsImpl userDetails) {
         Date now = new Date();
@@ -38,17 +34,17 @@ public class JwtCore {
                 .compact();
     }
 
-    public String getEmailFromJwt(String token) {
-        return parse(token).getSubject();
-    }
-
-    public String getRoleFromJwt(String token) {
-        return parse(token).get("role", String.class);
-    }
-
     public Long getUserIdFromJwt(String token) {
-        Object uid = parse(token).get("uid");
-        return uid == null ? null : Long.valueOf(uid.toString());
+        Claims claims = parse(token);
+        Object uid = claims.get("uid");
+        if (uid == null || claims.getExpiration() == null) {
+            throw new MalformedJwtException("Access token requires uid and expiration");
+        }
+        Long userId = Long.valueOf(uid.toString());
+        if (userId <= 0) {
+            throw new MalformedJwtException("Invalid user id");
+        }
+        return userId;
     }
 
     private Claims parse(String token) {

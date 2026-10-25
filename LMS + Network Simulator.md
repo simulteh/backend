@@ -1,4 +1,6 @@
 
+> Историческая спецификация v1.0. Актуальный контракт см. в README.md и Swagger.
+> Хранение документов через file_url и заявки на смену вуза из этой версии удалены из кода.
 
 LMS + Network Simulator
 Backend Architecture & API Contract Specification v1.0
