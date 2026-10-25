@@ -9,12 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LicenseRepository extends JpaRepository<License, Long> {
-    Optional<License> findByLicenseKey(String licenseKey);
-
     /** Блокирующая выборка для атомарной активации (защита от двойной активации одного ключа). */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<License> findWithLockByLicenseKey(String licenseKey);
     boolean existsByLicenseKey(String licenseKey);
     List<License> findByOwnerUserId(Long ownerUserId);
-    List<License> findByOwnerUserIdOrderByActivatedAtDesc(Long ownerUserId);
 }

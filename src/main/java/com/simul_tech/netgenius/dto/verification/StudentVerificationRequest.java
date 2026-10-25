@@ -16,9 +16,6 @@ public record StudentVerificationRequest(
         @Schema(description = "Специальность", example = "Программная инженерия") String speciality,
         @Schema(description = "Направление", example = "09.03.04") String direction,
         @Schema(description = "Курс", example = "2") Integer course,
-        @Schema(description = "Степень", example = "Бакалавриат") String degree,
-
-        @Schema(description = "URL подтверждающего документа") String documentUrl,
-        @Schema(description = "Тип документа", example = "STUDENT_CARD") String documentType
+        @Schema(description = "Степень", example = "Бакалавриат") String degree
 ) {
 }

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StudentLabProgressRepository extends JpaRepository<StudentLabProgress, Long> {
-    List<StudentLabProgress> findByStudentId(Long studentId);
     Optional<StudentLabProgress> findByStudentIdAndLabId(Long studentId, Long labId);
     /** Лидерборд по лабораторной: лучшие оценки студентов по убыванию. */
     List<StudentLabProgress> findByLabIdAndBestScoreNotNullOrderByBestScoreDesc(Long labId);

@@ -13,6 +13,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.stream.Collectors;
 
@@ -66,6 +69,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleUnreadable(HttpMessageNotReadableException ex) {
         return build(HttpStatus.BAD_REQUEST, "Некорректное тело запроса");
+    }
+
+    @ExceptionHandler({MissingServletRequestPartException.class, ConstraintViolationException.class})
+    public ResponseEntity<ApiError> handleInvalidForm(Exception ex) {
+        return build(HttpStatus.BAD_REQUEST, "Некорректные поля запроса или отсутствует файл");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleUploadLimit(MaxUploadSizeExceededException ex) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "Превышен лимит загрузки файла");
     }
 
     @ExceptionHandler(EmailSenderException.class)

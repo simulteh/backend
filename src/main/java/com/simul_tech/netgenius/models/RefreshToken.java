@@ -60,7 +60,7 @@ public class RefreshToken {
     }
 
     public boolean isExpired() {
-        return expiresAt.isBefore(Instant.now());
+        return !expiresAt.isAfter(Instant.now());
     }
 
     public boolean isUsable() {

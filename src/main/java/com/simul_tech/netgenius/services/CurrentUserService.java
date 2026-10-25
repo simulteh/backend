@@ -11,6 +11,7 @@ import com.simul_tech.netgenius.repositories.TeacherRepository;
 import com.simul_tech.netgenius.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -27,8 +28,9 @@ public class CurrentUserService {
 
     public UserDetailsImpl getPrincipal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetailsImpl principal)) {
-            throw new ForbiddenOperationException("Требуется аутентификация");
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof UserDetailsImpl principal)) {
+            throw new AuthenticationCredentialsNotFoundException("Требуется аутентификация");
         }
         return principal;
     }

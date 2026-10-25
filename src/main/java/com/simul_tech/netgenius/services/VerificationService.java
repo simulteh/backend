@@ -12,17 +12,14 @@ import com.simul_tech.netgenius.exceptions.ResourceNotFoundException;
 import com.simul_tech.netgenius.models.Student;
 import com.simul_tech.netgenius.models.Teacher;
 import com.simul_tech.netgenius.models.User;
-import com.simul_tech.netgenius.models.VerificationDocument;
 import com.simul_tech.netgenius.models.VerificationRequest;
 import com.simul_tech.netgenius.repositories.StudentRepository;
 import com.simul_tech.netgenius.repositories.TeacherRepository;
 import com.simul_tech.netgenius.repositories.UserRepository;
-import com.simul_tech.netgenius.repositories.VerificationDocumentRepository;
 import com.simul_tech.netgenius.repositories.VerificationRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.Comparator;
@@ -40,7 +37,6 @@ public class VerificationService {
     private static final String AUDIT_ENTITY = "VERIFICATION_REQUEST";
 
     private final VerificationRequestRepository verificationRequestRepository;
-    private final VerificationDocumentRepository verificationDocumentRepository;
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
@@ -73,7 +69,6 @@ public class VerificationService {
         studentRepository.save(student);
 
         VerificationRequest verification = createRequest(user.getId(), VerificationRequestType.STUDENT);
-        saveDocument(verification.getId(), request.documentUrl(), request.documentType());
 
         auditService.log(user.getId(), AUDIT_ENTITY, verification.getId(), "CREATE_STUDENT");
         return VerificationRequestResponse.from(verification);
@@ -100,7 +95,6 @@ public class VerificationService {
         teacherRepository.save(teacher);
 
         VerificationRequest verification = createRequest(user.getId(), VerificationRequestType.TEACHER);
-        saveDocument(verification.getId(), request.documentUrl(), request.documentType());
 
         auditService.log(user.getId(), AUDIT_ENTITY, verification.getId(), "CREATE_TEACHER");
         return VerificationRequestResponse.from(verification);
@@ -193,17 +187,6 @@ public class VerificationService {
         verification.setRequestType(type);
         verification.setStatus(VerificationStatus.PENDING);
         return verificationRequestRepository.save(verification);
-    }
-
-    private void saveDocument(Long requestId, String documentUrl, String documentType) {
-        if (!StringUtils.hasText(documentUrl)) {
-            return;
-        }
-        VerificationDocument document = new VerificationDocument();
-        document.setRequestId(requestId);
-        document.setFileUrl(documentUrl);
-        document.setDocumentType(documentType);
-        verificationDocumentRepository.save(document);
     }
 
     private VerificationRequest getPendingRequest(Long requestId) {

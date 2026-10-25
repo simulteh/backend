@@ -4,7 +4,6 @@ import com.simul_tech.netgenius.impls.TokenDetails;
 import com.simul_tech.netgenius.impls.TokenType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -13,7 +12,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tokens",
         uniqueConstraints =
         @UniqueConstraint(name = "uk_token_hash", columnNames = "token_hash")
@@ -27,7 +25,6 @@ public abstract class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Getter
     @Embedded
     TokenDetails details;
 

@@ -1,16 +1,17 @@
 package com.simul_tech.netgenius.security;
 
-import com.simul_tech.netgenius.services.UserService;
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,42 +22,35 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class TokenFilter extends OncePerRequestFilter {
     private final JwtCore jwtCore;
-    private final UserService userService;
+    private final AuthenticationUserService authenticationUserService;
+    private final SecurityErrorHandler securityErrorHandler;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String headerAuth = request.getHeader("Authorization");
-        if (headerAuth == null || !headerAuth.startsWith("Bearer ")) {
+        if (headerAuth == null || !headerAuth.regionMatches(true, 0, "Bearer ", 0, 7)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String jwt = headerAuth.substring(7);
-        String email;
         try {
-            email = jwtCore.getEmailFromJwt(jwt);
-        } catch (ExpiredJwtException e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
-            return;
-        } catch (Exception e) {
-            log.debug("Failed to parse JWT: {}", e.getMessage());
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-            return;
-        }
-
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
-                UserDetails userDetails = userService.loadUserByUsername(email);
+            Long userId = jwtCore.getUserIdFromJwt(headerAuth.substring(7).trim());
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                var userDetails = authenticationUserService.loadUserById(userId);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception e) {
-                log.debug("Failed to load user for token subject {}: {}", email, e.getMessage());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                return;
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                var context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(auth);
+                SecurityContextHolder.setContext(context);
             }
+        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
+            SecurityContextHolder.clearContext();
+            log.debug("Access token rejected: {}", e.getClass().getSimpleName());
+            securityErrorHandler.commence(request, response, new BadCredentialsException("Invalid access token", e));
+            return;
         }
         filterChain.doFilter(request, response);
     }

@@ -11,9 +11,6 @@ public record TeacherVerificationRequest(
 
         @Schema(description = "Телефон", example = "+79991234567") String phone,
         @Schema(description = "Место работы", example = "ВГУ") String workplace,
-        @Schema(description = "Должность", example = "Доцент") String position,
-
-        @Schema(description = "URL подтверждающего документа") String documentUrl,
-        @Schema(description = "Тип документа", example = "EMPLOYMENT_PROOF") String documentType
+        @Schema(description = "Должность", example = "Доцент") String position
 ) {
 }

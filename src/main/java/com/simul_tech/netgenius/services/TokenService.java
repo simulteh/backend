@@ -7,6 +7,7 @@ import com.simul_tech.netgenius.models.Token;
 import com.simul_tech.netgenius.models.VerifyToken;
 import com.simul_tech.netgenius.impls.TokenDetails;
 import com.simul_tech.netgenius.repositories.TokenRepository;
+import com.simul_tech.netgenius.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TokenService {
     private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
 
     private static final Duration VERIFY_TOKEN_TTL = Duration.ofHours(24);
     private static final Duration RESET_TOKEN_TTL = Duration.ofHours(24);
@@ -41,14 +43,18 @@ public class TokenService {
         return token.getRawToken();
     }
 
-    @Transactional(readOnly = true)
-    public Long validateToken(String rawToken, TokenType expectedType) {
+    /** Проверка и однократное использование атомарны; изменение пользователя участвует в той же транзакции. */
+    @Transactional
+    public Long consumeToken(String rawToken, TokenType expectedType) {
         if (rawToken == null || rawToken.isBlank()) {
             throw new InvalidTokenException("Token is blank");
         }
 
         String hash = Token.hash(rawToken);
-        Token token = tokenRepository.findByTokenHash(hash).orElseThrow(() ->
+        Long userId = tokenRepository.findUserIdByTokenHash(hash)
+                .orElseThrow(() -> new TokenNotFoundException("Invalid or expired token"));
+        lockUser(userId);
+        Token token = tokenRepository.findByTokenHashForUpdate(hash).orElseThrow(() ->
                 new TokenNotFoundException("Invalid or expired token"));
 
         if (!token.getType().equals(expectedType)) {
@@ -61,25 +67,18 @@ public class TokenService {
             throw new TokenAlreadyUsedException("Token has already been used");
         }
 
-        if (details.getExpiresAt().isBefore(Instant.now())) {
+        if (!details.getExpiresAt().isAfter(Instant.now())) {
             throw new TokenExpiredException("Token has expired");
         }
 
+        details.setConsumed(true);
+        tokenRepository.save(token);
         return details.getUserId();
     }
 
     @Transactional
-    public void consumeToken(String rawToken) {
-        String hash = Token.hash(rawToken);
-        Token token = tokenRepository.findByTokenHash(hash)
-                .orElseThrow(() -> new TokenNotFoundException("Token not found"));
-
-        token.getDetails().setConsumed(true);
-        tokenRepository.save(token);
-    }
-
-    @Transactional
     public void cancelActiveTokens(Long userId, TokenType type) {
+        lockUser(userId);
         List<Token> tokens = tokenRepository.findActiveTokensByUserId(userId);
         for (Token token : tokens) {
             if (token.getType() == type) {
@@ -87,5 +86,10 @@ public class TokenService {
                 tokenRepository.save(token);
             }
         }
+    }
+
+    private void lockUser(Long userId) {
+        userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 }

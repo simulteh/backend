@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
  * Аутентификация и управление сессией. JWT access-токен живёт 15 минут,
  * refresh-токен — 30 дней.
  */
-@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -92,13 +90,15 @@ public class SecurityController {
     @PostMapping("/forgot-password")
     @Operation(summary = "Запрос на сброс пароля (письмо со ссылкой)")
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
-        try {
-            userService.sendResetToken(request.getEmail());
-        } catch (Exception e) {
-            // Не раскрываем существование email.
-            log.debug("forgot-password для {} завершился: {}", request.getEmail(), e.getMessage());
-        }
+        authService.forgotPassword(request.getEmail());
         return ResponseEntity.ok(MessageResponse.of("Если email существует, ссылка для сброса отправлена"));
+    }
+
+    @PostMapping("/resend-confirmation")
+    @Operation(summary = "Повторно отправить подтверждение email; существование адреса не раскрывается")
+    public ResponseEntity<MessageResponse> resendConfirmation(@Valid @RequestBody PasswordResetRequest request) {
+        authService.resendConfirmation(request.getEmail());
+        return ResponseEntity.ok(MessageResponse.of("Если email существует и не подтверждён, письмо отправлено"));
     }
 
     @PostMapping("/reset-password")
