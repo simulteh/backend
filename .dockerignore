@@ -1,0 +1,10 @@
+.git
+.idea
+.env
+.env.*
+target
+build
+.m2
+logs
+backups
+*.log

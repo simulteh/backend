@@ -27,13 +27,13 @@ public class DataInitializer implements CommandLineRunner {
     private final LabRepository labRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.admin.email:admin@netgenius.ru}")
+    @Value("${app.admin.email}")
     private String adminEmail;
 
-    @Value("${app.admin.password:Admin12345}")
+    @Value("${app.admin.password}")
     private String adminPassword;
 
-    @Value("${app.seed.labs:true}")
+    @Value("${app.seed.labs:false}")
     private boolean seedLabs;
 
     @Override

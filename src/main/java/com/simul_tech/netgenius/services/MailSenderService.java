@@ -28,7 +28,7 @@ public class MailSenderService {
     @Value("${app.teacher-request-email:}")
     private String teacherRequestEmail;
 
-    @Value("${app.mail.from:${spring.mail.username:abtserenov@edu.hse.ru}}")
+    @Value("${app.mail.from:${spring.mail.username:}}")
     private String from;
 
     public void sendPasswordResetEmail(String email, String token, String userName) {

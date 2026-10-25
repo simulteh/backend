@@ -16,48 +16,62 @@ Backend системы дистанционного обучения с деск
 
 ## Запуск
 
-### Docker (рекомендуется)
+Для ВМ используется Docker Compose: бэкенд и PostgreSQL работают в контейнерах
+на одной машине. Пошаговая инструкция — [DEPLOY.md](DEPLOY.md).
 
 ```bash
-docker compose up --build
+cp .env.example .env
+chmod 600 .env
+nano .env
+# После заполнения настроек:
+docker compose config --quiet
+docker compose up -d --build --wait --wait-timeout 180
 ```
 
-Поднимает PostgreSQL и приложение на `http://localhost:8080`. Swagger UI —
-`http://localhost:8080/swagger-ui.html`.
+SMTP, пароль БД, JWT-секрет и данные первого администратора задаются в `.env`
+рядом с `docker-compose.yml`. Реальный `.env` исключён из Git и Docker build context.
+В репозитории хранится только `.env.example` с пустыми полями для секретов.
 
-### Локально
+API доступно на порту `APP_PORT` (по умолчанию 8080), Swagger —
+`/swagger-ui.html`, проверка доступности — `GET /auth/ping`.
+PostgreSQL доступен только внутри Docker-сети; данные хранятся в `postgres_data`.
 
-Нужны JDK 17 и запущенный PostgreSQL (`netgenius`/`postgres`/`postgres` на 5432).
+### Локальный запуск без контейнера приложения
+
+Нужны JDK 17, PostgreSQL на localhost и те же переменные окружения из `.env`.
+Сам Spring Boot автоматически этот файл не читает. Если `.env` заполнен в
+совместимом с shell формате (секреты в одинарных кавычках), переменные можно загрузить так:
 
 ```bash
-mvn spring-boot:run
-# либо с локальным профилем (БД на localhost):
+set -a
+. ./.env
+set +a
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-> На машинах, где JDK по умолчанию новее 17, используйте JDK 17 для сборки
-> (см. `pom.xml`, `<java.version>17</java.version>`).
+Этот вариант требует отдельно доступного PostgreSQL на localhost:5432;
+основной Compose не публикует порт базы на ВМ.
+На машинах с более новой JDK используйте JDK 17 для сборки.
 
 ### Тесты
 
 ```bash
-mvn test
+mvn clean verify
 ```
 
-Тесты выполняются на H2 in-memory (`@SpringBootTest`, MockMvc). `ApiSmokeTest`
-проверяет регистрацию/логин/JWT и RBAC. `AuthSecurityTest` проверяет привязку JWT
-к пользователю при смене и повторной регистрации email, актуальность ролей,
-ошибки 401/403, ротацию и отзыв refresh-токенов, смену и сброс пароля,
-одноразовость токенов и конкурирующие транзакции.
+Основные тесты выполняются на H2 in-memory (`@SpringBootTest`, MockMvc).
+Проверяются регистрация, JWT, RBAC, ротация и отзыв токенов, одноразовые ссылки,
+конкурирующие транзакции, группы, оценки, заявки, письма и Swagger.
+`DeploymentConfigurationTest` отдельно проверяет загрузку production-настроек
+из окружения и SMTP в режимах STARTTLS/SSL. Реальную доставку писем и запуск
+с PostgreSQL необходимо проверить на ВМ.
 
-## Учётные данные по умолчанию
+### Первый администратор
 
-При первом старте `DataInitializer` создаёт администратора и набор
-демонстрационных лабораторных работ:
-
-- **admin@netgenius.ru** / **Admin12345** (роль `ADMIN`)
-
-Значения настраиваются в `application.properties` (`app.admin.*`, `app.seed.labs`).
+`DataInitializer` создаёт администратора из `ADMIN_EMAIL` и `ADMIN_PASSWORD`,
+если такого email ещё нет. Общего пароля по умолчанию нет. При последующих
+запусках пароль существующего аккаунта не перезаписывается. Демонстрационные
+лабораторные создаются только при `SEED_LABS=true`.
 
 ## Роли и доступ (RBAC)
 
