@@ -14,8 +14,8 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
-    @Value("${server.port}")
-    private int serverPort;
+    @Value("${app.public-api-url:}")
+    private String publicApiUrl;
 
     @Bean
     public OpenAPI api() {
@@ -26,27 +26,20 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization");
 
-        return new OpenAPI()
+        OpenAPI api = new OpenAPI()
                 .components(new Components().addSecuritySchemes("bearerAuth", bearerScheme))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-                .servers(
-                        List.of(
-                                new Server()
-                                        .url("http://localhost:" + serverPort)
-                                        .description("Локальный сервер"),
-                                new Server()
-                                        .url("http://212.67.12.82:" + serverPort)
-                                        .description("Продакшн сервер"),
-                                new Server()
-                                        .url("http://net-genius.ru/api")
-                                        .description("Через nginx прокси")
-                        )
-                )
                 .info(
                         new Info()
                                 .title("Net-Genius API")
                                 .description("API для системы Net-Genius")
                                 .version("1.0.0")
                 );
+        // По умолчанию springdoc определяет адрес из запроса, включая доверенные proxy headers.
+        // PUBLIC_API_URL позволяет явно задать внешний префикс, например /api.
+        if (!publicApiUrl.isBlank()) {
+            api.servers(List.of(new Server().url(publicApiUrl.trim()).description("API")));
+        }
+        return api;
     }
 }

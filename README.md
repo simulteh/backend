@@ -35,6 +35,9 @@ SMTP, пароль БД, JWT-секрет и данные первого адм�
 API доступно на порту `APP_PORT` (по умолчанию 8080), Swagger —
 `/swagger-ui.html`, проверка доступности — `GET /auth/ping`.
 PostgreSQL доступен только внутри Docker-сети; данные хранятся в `postgres_data`.
+Для nginx с префиксом `/api` настройте `PUBLIC_API_URL=/api`,
+`FORWARD_HEADERS_STRATEGY=framework` и заголовки прокси по [DEPLOY.md](DEPLOY.md).
+В этом режиме Swagger открывается по `/api/swagger-ui.html`.
 
 ### Локальный запуск без контейнера приложения
 

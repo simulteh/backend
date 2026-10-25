@@ -46,24 +46,24 @@ nano .env
 | `SMTP_PASSWORD` | Сгенерированный SMTP-пароль / пароль приложения |
 | `FRONTEND_URL` | Адрес фронтенда, например `https://simulteh.com`. По нему формируются ссылки подтверждения и сброса пароля |
 | `TEACHER_REQUEST_EMAIL` | Почта, куда отправлять заявки преподавателей с документами |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Учётные данные первого администратора |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Вы сами выбираете email и отдельный пароль для первого администратора приложения; вход через `/auth/login` |
 
 `SMTP_HOST` и `SMTP_PORT` должны соответствовать выданным настройкам почты.
-В шаблоне указан Яндекс с портом 587:
+В шаблоне указан Яндекс с портом 465 и SSL, как в переданном файле настроек ВМ:
 
 ```dotenv
 SMTP_HOST=smtp.yandex.ru
-SMTP_PORT=587
-SMTP_STARTTLS=true
-SMTP_SSL=false
-```
-
-Если SMTP-сервер использует порт 465 с SSL:
-
-```dotenv
 SMTP_PORT=465
 SMTP_STARTTLS=false
 SMTP_SSL=true
+```
+
+Если SMTP-сервер использует порт 587 с STARTTLS:
+
+```dotenv
+SMTP_PORT=587
+SMTP_STARTTLS=true
+SMTP_SSL=false
 ```
 
 `SMTP_FROM` можно оставить пустым: отправителем будет `SMTP_USERNAME`.
@@ -72,6 +72,8 @@ SMTP_SSL=true
 JWT-ключ сохраняется между перезапусками. Его замена делает ранее выданные
 access-токены недействительными. `ADMIN_PASSWORD` используется только при
 создании нового администратора; пароль существующего аккаунта меняется через API.
+Выберите новый email либо email существующего администратора. Email обычного
+пользователя не превращает его в администратора через настройки окружения.
 `SEED_LABS=false` оставляет демонстрационные лабораторные выключенными.
 
 Изменение `POSTGRES_*` в `.env` не меняет пароль или имя уже созданной базы.
@@ -99,8 +101,42 @@ PostgreSQL доступен приложению по `postgres:5432` внутр
 используется `APP_BIND_ADDRESS=0.0.0.0`. HTTPS настраивается на reverse proxy.
 
 Swagger: `http://АДРЕС_ВМ:8080/swagger-ui.html` при прямом доступе либо
-`/swagger-ui.html` на домене API за nginx. На фронтенде должны существовать
+`/api/swagger-ui.html` при nginx с внешним префиксом `/api` (см. ниже).
+На фронтенде должны существовать
 страницы `/confirm-email?token=...` и `/reset-password?token=...`.
+
+### Swagger и API через nginx по `/api`
+
+В старых правках ВМ адреса Swagger были зашиты в `SwaggerConfig`. Теперь
+адрес определяется из запроса либо задаётся в `.env`:
+
+```dotenv
+APP_BIND_ADDRESS=127.0.0.1
+PUBLIC_API_URL=/api
+FORWARD_HEADERS_STRATEGY=framework
+```
+
+В существующем `server {}` nginx сверьте `location /api/` с фрагментом
+[`deploy/nginx-api.conf`](deploy/nginx-api.conf); если такого location ещё нет,
+добавьте его. Этот фрагмент проксирует `/api/` на
+`http://127.0.0.1:8080/`, передаёт внешний протокол, host и префикс `/api`.
+Если меняли `APP_PORT`, измените также порт в `proxy_pass`.
+`framework` используется с доверенным nginx и закрытым прямым доступом к приложению;
+для прямого доступа к API в шаблоне остаётся `FORWARD_HEADERS_STRATEGY=none`.
+Это соответствует [рекомендациям springdoc для reverse proxy](https://springdoc.org/v2/#how-can-i-deploy-springdoc-openapi-starter-webmvc-ui-behind-a-reverse-proxy).
+
+После правки nginx и `.env`:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+docker compose up -d --wait --wait-timeout 180
+```
+
+Откройте `https://ВАШ-ДОМЕН/api/swagger-ui.html`. Загрузка схемы должна идти на
+`/api/api-docs`, а кнопка Try it out — отправлять запросы в `/api/...` этого же домена.
+Для HTTP используйте схему фактического адреса. Прямой доступ без nginx также
+поддерживается: оставьте `PUBLIC_API_URL` пустым, Swagger возьмёт адрес из запроса.
 
 ## 4. Проверить почту и вход
 

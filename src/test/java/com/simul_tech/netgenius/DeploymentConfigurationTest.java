@@ -1,6 +1,8 @@
 package com.simul_tech.netgenius;
 
 import com.simul_tech.netgenius.security.JwtCore;
+import com.simul_tech.netgenius.configurators.SwaggerConfig;
+import io.swagger.v3.oas.models.OpenAPI;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -36,6 +38,8 @@ class DeploymentConfigurationTest {
             assertThat(environment.getProperty("app.website-url")).isEqualTo("https://frontend.example.test");
             assertThat(environment.getProperty("app.mail.from")).isEqualTo("mail@example.test");
             assertThat(environment.getProperty("app.teacher-request-email")).isEqualTo("review@example.test");
+            assertThat(environment.getProperty("server.forward-headers-strategy")).isEqualTo("none");
+            assertThat(context.getBean(OpenAPI.class).getServers()).isNull();
 
             JavaMailSenderImpl sender = context.getBean(JavaMailSenderImpl.class);
             assertThat(sender.getHost()).isEqualTo("smtp.example.test");
@@ -52,11 +56,14 @@ class DeploymentConfigurationTest {
     @Test
     void smtp465SupportsImplicitTlsAndCustomSender() {
         runner(Map.of("SMTP_PORT", "465", "SMTP_SSL", "true", "SMTP_STARTTLS", "false",
-                "SMTP_FROM", "support@example.test")).run(context -> {
+                "SMTP_FROM", "support@example.test", "PUBLIC_API_URL", "/api",
+                "FORWARD_HEADERS_STRATEGY", "framework")).run(context -> {
             assertThat(context).hasNotFailed();
             JavaMailSenderImpl sender = context.getBean(JavaMailSenderImpl.class);
             assertThat(sender.getPort()).isEqualTo(465);
             assertThat(context.getEnvironment().getProperty("app.mail.from")).isEqualTo("support@example.test");
+            assertThat(context.getEnvironment().getProperty("server.forward-headers-strategy")).isEqualTo("framework");
+            assertThat(context.getBean(OpenAPI.class).getServers().get(0).getUrl()).isEqualTo("/api");
             assertThat(sender.getJavaMailProperties())
                     .containsEntry("mail.smtp.ssl.enable", "true")
                     .containsEntry("mail.smtp.starttls.enable", "false")
@@ -88,6 +95,7 @@ class DeploymentConfigurationTest {
                 .withConfiguration(AutoConfigurations.of(
                         PropertyPlaceholderAutoConfiguration.class, MailSenderAutoConfiguration.class))
                 .withBean(JwtCore.class)
+                .withUserConfiguration(SwaggerConfig.class)
                 .withInitializer(context -> {
                     try {
                         context.getEnvironment().getPropertySources().addFirst(new ResourcePropertySource(
