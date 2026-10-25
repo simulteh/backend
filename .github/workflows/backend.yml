@@ -1,0 +1,94 @@
+name: Backend CI and deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A running deployment must finish before another one starts.
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Check deployment script
+        run: |
+          bash -n deploy/deploy-vm.sh
+          python3 -B -m unittest discover -s deploy/tests -p 'test_*.py' -v
+      - name: Test backend
+        run: mvn --batch-mode --no-transfer-progress clean verify
+
+  deploy:
+    name: Deploy to VM
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '212.67.12.82' }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER || 'root' }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+    steps:
+      - name: Prepare deployment SSH credentials
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_SSH_KEY" || { echo 'Missing secret DEPLOY_SSH_KEY'; exit 1; }
+          test -n "$DEPLOY_KNOWN_HOSTS" || { echo 'Missing secret DEPLOY_KNOWN_HOSTS'; exit 1; }
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]] || exit 1
+          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
+          [[ "$DEPLOY_PORT" =~ ^[0-9]{1,5}$ ]] || exit 1
+          port=$((10#$DEPLOY_PORT))
+          ((port >= 1 && port <= 65535)) || exit 1
+          ssh_dir="$RUNNER_TEMP/simulteh-deploy-ssh"
+          umask 077
+          mkdir -p "$ssh_dir"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ssh_dir/id_ed25519"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          ssh-keygen -y -P '' -f "$ssh_dir/id_ed25519" > /dev/null
+          lookup_host="$DEPLOY_HOST"
+          if ((port != 22)); then lookup_host="[$DEPLOY_HOST]:$port"; fi
+          ssh-keygen -F "$lookup_host" -f "$ssh_dir/known_hosts" > /dev/null
+      - name: Update backend on VM
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
+          ssh_dir="$RUNNER_TEMP/simulteh-deploy-ssh"
+          ssh -F /dev/null -T \
+            -i "$ssh_dir/id_ed25519" -p "$DEPLOY_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$ssh_dir/known_hosts" \
+            -o GlobalKnownHostsFile=/dev/null \
+            -o ConnectTimeout=15 -o ConnectionAttempts=1 \
+            -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+            "$DEPLOY_USER@$DEPLOY_HOST" "deploy $GITHUB_SHA"
+      - name: Remove temporary SSH credentials
+        if: always()
+        shell: bash
+        run: |
+          ssh_dir="$RUNNER_TEMP/simulteh-deploy-ssh"
+          rm -f "$ssh_dir/id_ed25519" "$ssh_dir/known_hosts"
+          rmdir "$ssh_dir" 2>/dev/null || true

@@ -6,6 +6,9 @@ Backend системы дистанционного обучения с деск
 Текущий контракт описан ниже и в Swagger. Первоначальная спецификация
 [`LMS + Network Simulator.md`](LMS%20+%20Network%20Simulator.md) сохранена как история требований.
 
+- [Инструкция для фронтендеров](FRONTEND_GUIDE.md): подключение API, сессии, кабинеты и примеры.
+- [GitHub Actions и автодеплой](deploy/GITHUB_ACTIONS.md): push в `main` → тесты → обновление бэкенда на ВМ.
+
 ## Стек
 
 - Java 17, Spring Boot 3.4.2 (Web, Data JPA, Security, Mail, Validation)
@@ -19,8 +22,8 @@ Backend системы дистанционного обучения с деск
 На существующей ВМ `/root/net-genius` используется **корневой** Docker Compose
 с сервисами `nginx`, `frontend`, `backend`, `database`. Бэкенд собирается из
 `./backend/Dockerfile`; nginx обращается к нему по `backend:8080`, а бэкенд —
-к существующей PostgreSQL по `database:5432`. Пошаговая инструкция сохранения
-данных и обновления — [DEPLOY.md](DEPLOY.md).
+к существующей PostgreSQL по `database:5432`. Пошаговая инструкция настройки
+и обновления — [DEPLOY.md](DEPLOY.md).
 
 Для этой ВМ скопируйте `backend/deploy/vm.env.example` в `backend/.env`, заполните
 почту, JWT и первого администратора, затем подключите файл через `env_file`
