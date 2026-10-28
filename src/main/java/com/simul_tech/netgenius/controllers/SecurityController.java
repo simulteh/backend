@@ -153,7 +153,8 @@ public class SecurityController {
     }
 
     @PostMapping("/forgot-password")
-    @Operation(summary = "Запрос на сброс пароля (письмо со ссылкой)")
+    @Operation(summary = "Запрос на сброс пароля (письмо со ссылкой)",
+            description = "Для существующего адреса письмо сохраняется в очередь и отправляется после фиксации транзакции. При временном сбое SMTP отправка повторяется автоматически. Ответ не раскрывает существование адреса и не подтверждает доставку.")
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody PasswordResetRequest request) {
         authService.forgotPassword(request.getEmail());
         return ResponseEntity.ok(MessageResponse.of("Если email существует, ссылка для сброса отправлена"));
@@ -167,7 +168,8 @@ public class SecurityController {
     }
 
     @PostMapping("/resend-confirmation")
-    @Operation(summary = "Повторно отправить подтверждение email; существование адреса не раскрывается")
+    @Operation(summary = "Повторно отправить подтверждение email; существование адреса не раскрывается",
+            description = "Письмо сохраняется в очередь с автоматическими повторами при сбое SMTP. Прежняя доставленная ссылка действует до успешной отправки новой. Существование адреса и результат доставки в публичном ответе не раскрываются.")
     public ResponseEntity<MessageResponse> resendConfirmation(@Valid @RequestBody PasswordResetRequest request) {
         authService.resendConfirmation(request.getEmail());
         return ResponseEntity.ok(MessageResponse.of("Если email существует и не подтверждён, письмо отправлено"));

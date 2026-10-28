@@ -1,6 +1,7 @@
 package com.simul_tech.netgenius.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -8,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 @Schema(description = "Смена email")
 public record UpdateEmailRequest(
         @Schema(description = "Новый email", example = "new@mail.ru")
-        @NotBlank(message = "Email обязателен") @Email(message = "Некорректный формат email") String newEmail,
+        @NotBlank(message = "Email обязателен") @Email(message = "Некорректный формат email") @Size(max = 255) String newEmail,
         @Schema(description = "Текущий пароль для подтверждения")
         @NotBlank(message = "Пароль обязателен") String password
 ) {

@@ -138,15 +138,15 @@ public class GroupService {
             if (studentGroupRepository.existsByStudentIdAndGroupId(student.getId(), groupId)) {
                 throw new ConflictException("Студент уже состоит в группе");
             }
-            if (groupInvitationRepository.existsByGroupIdAndStudentIdAndStatus(
-                    groupId, student.getId(), InvitationStatus.PENDING)) {
+            if (groupInvitationRepository.existsByGroupIdAndStudentIdAndStatusAndExpiresAtAfter(
+                    groupId, student.getId(), InvitationStatus.PENDING, Instant.now())) {
                 throw new ConflictException("Активное приглашение уже существует");
             }
         } else if (hasEmail) {
             // Для приглашений по email тоже не плодим дубли активных приглашений в ту же группу.
             boolean duplicate = groupInvitationRepository
                     .findByEmailAndStatus(email, InvitationStatus.PENDING).stream()
-                    .anyMatch(inv -> groupId.equals(inv.getGroupId()));
+                    .anyMatch(inv -> groupId.equals(inv.getGroupId()) && inv.getExpiresAt().isAfter(Instant.now()));
             if (duplicate) {
                 throw new ConflictException("Активное приглашение на этот email уже существует");
             }

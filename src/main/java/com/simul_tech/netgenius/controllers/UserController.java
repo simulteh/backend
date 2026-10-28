@@ -40,7 +40,8 @@ public class UserController {
     }
 
     @PutMapping("/email")
-    @Operation(summary = "Сменить email (требует пароль, новый email требует подтверждения)")
+    @Operation(summary = "Сменить email (требует пароль, новый email требует подтверждения)",
+            description = "Отзывает refresh-сессии и ранее выданные ссылки сброса пароля/подтверждения. Письмо на новый адрес ставится в очередь. Уже выданный access-токен действует до истечения срока.")
     public ResponseEntity<MessageResponse> updateEmail(@Valid @RequestBody UpdateEmailRequest request) {
         userService.updateEmail(currentUserService.getCurrentUserId(),
                 request.newEmail(), request.password());
