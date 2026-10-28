@@ -10,6 +10,7 @@ import java.time.Instant;
 /** Заявка на подтверждение роли (ответ пользователю). */
 @Schema(description = "Заявка на подтверждение роли")
 public record VerificationRequestResponse(
+        @Schema(description = "ID заявки на подтверждение роли, совпадает с номером «Заявка №» в письме. Администратор использует его для approve/reject", example = "4")
         Long id,
         VerificationRequestType requestType,
         VerificationStatus status,
