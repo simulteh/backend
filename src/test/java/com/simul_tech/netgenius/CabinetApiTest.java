@@ -251,6 +251,78 @@ class CabinetApiTest {
         createGroup(users.findById(candidate.getId()).orElseThrow(), "После проверки", "Вуз");
     }
 
+    @Test
+    void studentRequestEmailsAdministratorAndNeedsManualApproval() throws Exception {
+        User candidate = user(Role.USER);
+        JsonNode request = read(mvc.perform(auth(post("/verification/student"), candidate)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(Map.of(
+                                "fullName", "Тестов Иван Иванович", "birthYear", 2003,
+                                "phone", "+79990000000", "faculty", "ФКН",
+                                "speciality", "Программная инженерия", "direction", "09.03.04",
+                                "course", 2, "degree", "Бакалавриат"))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.requestType").value("STUDENT"))
+                .andExpect(jsonPath("$.status").value("PENDING")).andReturn());
+
+        ArgumentCaptor<MimeMessage> sent = ArgumentCaptor.forClass(MimeMessage.class);
+        verify(mail).send(sent.capture());
+        MimeMessage message = sent.getValue();
+        assertThat(message.getAllRecipients()[0].toString()).isEqualTo("review@example.test");
+        assertThat(message.getReplyTo()[0].toString()).isEqualTo(candidate.getEmail());
+        assertThat(message.getSubject()).isEqualTo("Заявка на статус студента — СИМУЛТЕХ");
+        assertThat(attachmentNames(message)).isEmpty();
+        assertThat(text(message)).contains(
+                "Заявка № " + request.path("id").asLong(),
+                "ID пользователя: " + candidate.getId(), candidate.getEmail(),
+                "Тестов Иван Иванович", "Год рождения: 2003", "Телефон: +79990000000",
+                "Факультет: ФКН", "Специальность: Программная инженерия",
+                "Направление: 09.03.04", "Курс: 2", "Степень: Бакалавриат",
+                "/admin/verifications/" + request.path("id").asLong() + "/approve");
+        assertThat(text(message)).doesNotContain("null");
+        assertThat(students.findByUserId(candidate.getId()).orElseThrow().isVerified()).isFalse();
+        assertThat(users.findById(candidate.getId()).orElseThrow().getRole()).isEqualTo(Role.USER);
+        mvc.perform(auth(get("/verification/status"), candidate))
+                .andExpect(jsonPath("$[0].id").value(request.path("id").asLong()))
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
+
+        User admin = users.findByEmail("admin@netgenius.ru").orElseThrow();
+        mvc.perform(auth(post("/admin/verifications/" + request.path("id").asLong() + "/approve"), admin))
+                .andExpect(status().isOk());
+        mvc.perform(auth(get("/profile/me"), candidate)).andExpect(jsonPath("$.role").value("STUDENT"));
+    }
+
+    @Test
+    void studentMailFailureRollsBackRequestAndAllowsRetry() throws Exception {
+        User candidate = user(Role.USER);
+        doThrow(new MailSendException("SMTP unavailable")).when(mail).send(any(MimeMessage.class));
+        mvc.perform(auth(post("/verification/student"), candidate)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Тестов Иван\"}"))
+                .andExpect(status().isServiceUnavailable());
+        assertThat(verifications.findByUserIdOrderByCreatedAtDesc(candidate.getId())).isEmpty();
+        assertThat(students.findByUserId(candidate.getId())).isEmpty();
+        assertThat(users.findById(candidate.getId()).orElseThrow().getRole()).isEqualTo(Role.USER);
+
+        doNothing().when(mail).send(any(MimeMessage.class));
+        mvc.perform(auth(post("/verification/student"), candidate)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Тестов Иван\"}"))
+                .andExpect(status().isCreated());
+        assertThat(verifications.findByUserIdOrderByCreatedAtDesc(candidate.getId())).hasSize(1);
+        assertThat(students.findByUserId(candidate.getId()).orElseThrow().isVerified()).isFalse();
+    }
+
+    @Test
+    void duplicatePendingStudentRequestDoesNotSendAnotherEmail() throws Exception {
+        User candidate = user(Role.USER);
+        for (int attempt = 0; attempt < 2; attempt++) {
+            mvc.perform(auth(post("/verification/student"), candidate)
+                            .contentType(MediaType.APPLICATION_JSON).content("{\"fullName\":\"Тестов Иван\"}"))
+                    .andExpect(status().is(attempt == 0 ? 201 : 409));
+        }
+        assertThat(verifications.findByUserIdOrderByCreatedAtDesc(candidate.getId())).hasSize(1);
+        verify(mail, times(1)).send(any(MimeMessage.class));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"student", "teacher"})
     void roleVerificationStillWorksWithoutDocumentUrls(String type) throws Exception {

@@ -1,6 +1,7 @@
 package com.simul_tech.netgenius.services;
 
 import com.simul_tech.netgenius.exceptions.EmailSenderException;
+import com.simul_tech.netgenius.models.Student;
 import com.simul_tech.netgenius.models.User;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class MailSenderService {
     private String websiteUrl;
 
     @Value("${app.teacher-request-email:}")
-    private String teacherRequestEmail;
+    private String verificationRequestEmail;
 
     @Value("${app.mail.from:${spring.mail.username:}}")
     private String from;
@@ -57,28 +58,79 @@ public class MailSenderService {
 
     }
 
+    public void sendStudentRequest(User user, Long requestId, Student student) {
+        requireVerificationRecipient();
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+            helper.setFrom(senderAddress(), "СИМУЛТЕХ");
+            helper.setTo(verificationRequestEmail);
+            helper.setReplyTo(user.getEmail());
+            helper.setSubject("Заявка на статус студента — СИМУЛТЕХ");
+
+            StringBuilder body = new StringBuilder(verificationHeader(user, requestId));
+            appendDetail(body, "ФИО", student.getFullName());
+            appendDetail(body, "Год рождения", student.getBirthYear());
+            appendDetail(body, "Телефон", student.getPhone());
+            appendDetail(body, "ID вуза", student.getUniversityId());
+            appendDetail(body, "Факультет", student.getFaculty());
+            appendDetail(body, "Специальность", student.getSpeciality());
+            appendDetail(body, "Направление", student.getDirection());
+            appendDetail(body, "Курс", student.getCourse());
+            appendDetail(body, "Степень", student.getDegree());
+            body.append("\n\nРоль STUDENT выдаётся администратором после проверки заявки.")
+                    .append(reviewInstructions(requestId));
+            helper.setText(body.toString(), false);
+            send(message);
+        } catch (EmailSenderException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new EmailSenderException("Не удалось подготовить заявку студента");
+        }
+    }
+
     public void sendTeacherRequest(User user, Long requestId, String fullName, String organization,
                                    String filename, String contentType, byte[] contents) {
-        if (teacherRequestEmail == null || teacherRequestEmail.isBlank()) {
-            throw new EmailSenderException("Не настроен адрес получения заявок преподавателей");
-        }
+        requireVerificationRecipient();
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(senderAddress(), "СИМУЛТЕХ");
-            helper.setTo(teacherRequestEmail);
+            helper.setTo(verificationRequestEmail);
             helper.setReplyTo(user.getEmail());
             helper.setSubject("Заявка на статус преподавателя — СИМУЛТЕХ");
-            helper.setText("Заявка № " + requestId + "\nID пользователя: " + user.getId()
-                    + "\nEmail: " + user.getEmail() + "\nФИО: " + fullName
+            helper.setText(verificationHeader(user, requestId) + "\nФИО: " + fullName
                     + "\nОрганизация: " + organization
-                    + "\n\nРоль TEACHER выдаётся администратором после проверки документа.", false);
+                    + "\n\nРоль TEACHER выдаётся администратором после проверки документа."
+                    + reviewInstructions(requestId), false);
             helper.addAttachment(filename, new ByteArrayResource(contents), contentType);
             send(message);
         } catch (EmailSenderException e) {
             throw e;
         } catch (Exception e) {
             throw new EmailSenderException("Не удалось подготовить заявку преподавателя");
+        }
+    }
+
+    private void requireVerificationRecipient() {
+        if (verificationRequestEmail == null || verificationRequestEmail.isBlank()) {
+            throw new EmailSenderException("Не настроен адрес получения заявок на подтверждение роли");
+        }
+    }
+
+    private String verificationHeader(User user, Long requestId) {
+        return "Заявка № " + requestId + "\nID пользователя: " + user.getId()
+                + "\nEmail: " + user.getEmail();
+    }
+
+    private String reviewInstructions(Long requestId) {
+        return "\n\nОдобрение в Swagger: POST /admin/verifications/" + requestId + "/approve"
+                + "\nВ поле id укажите ID заявки: " + requestId + ". ID пользователя сюда не передаётся.";
+    }
+
+    private void appendDetail(StringBuilder body, String label, Object value) {
+        if (value != null && !value.toString().isBlank()) {
+            body.append('\n').append(label).append(": ").append(value);
         }
     }
 

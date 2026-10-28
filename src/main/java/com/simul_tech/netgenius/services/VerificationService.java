@@ -42,11 +42,13 @@ public class VerificationService {
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
     private final AuditService auditService;
+    private final MailSenderService mailSenderService;
 
     /** Подача заявки на роль студента. */
     public VerificationRequestResponse requestStudent(StudentVerificationRequest request) {
+        User user = userRepository.findByIdForUpdate(currentUserService.getCurrentUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         currentUserService.requireEmailConfirmed();
-        User user = currentUserService.getCurrentUser();
         requireUserRole(user);
         requireNoPending(user.getId());
         // Нельзя быть одновременно студентом и преподавателем.
@@ -71,6 +73,8 @@ public class VerificationService {
         VerificationRequest verification = createRequest(user.getId(), VerificationRequestType.STUDENT);
 
         auditService.log(user.getId(), AUDIT_ENTITY, verification.getId(), "CREATE_STUDENT");
+        // При сбое SMTP транзакция откатывается, поэтому пользователь может повторить отправку.
+        mailSenderService.sendStudentRequest(user, verification.getId(), student);
         return VerificationRequestResponse.from(verification);
     }
 
