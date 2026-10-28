@@ -4,6 +4,7 @@ import com.simul_tech.netgenius.dto.verification.StudentVerificationRequest;
 import com.simul_tech.netgenius.dto.verification.TeacherVerificationRequest;
 import com.simul_tech.netgenius.dto.verification.VerificationRequestResponse;
 import com.simul_tech.netgenius.dto.common.ApiError;
+import com.simul_tech.netgenius.exceptions.BadRequestException;
 import com.simul_tech.netgenius.services.VerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -49,11 +50,12 @@ public class VerificationController {
     }
 
     @PostMapping("/teacher")
-    @Operation(summary = "Подать заявку на роль преподавателя")
-    @ApiResponse(responseCode = "201", description = "Заявка на роль преподавателя создана")
+    @Operation(summary = "Устаревшая JSON-заявка преподавателя: используйте /profile/teacher-request", deprecated = true,
+            description = "Заявка преподавателя требует документ. Этот маршрут больше не создаёт заявку; отправьте multipart/form-data на /profile/teacher-request.")
+    @ApiResponse(responseCode = "400", description = "Используйте /profile/teacher-request с документом", content = @Content(schema = @Schema(implementation = ApiError.class)))
     public ResponseEntity<VerificationRequestResponse> requestTeacher(
             @Valid @RequestBody TeacherVerificationRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(verificationService.requestTeacher(request));
+        throw new BadRequestException("Для заявки преподавателя отправьте форму с документом на /profile/teacher-request");
     }
 
     @GetMapping("/status")

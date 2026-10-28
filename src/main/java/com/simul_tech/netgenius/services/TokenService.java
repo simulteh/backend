@@ -78,14 +78,28 @@ public class TokenService {
 
     @Transactional
     public void cancelActiveTokens(Long userId, TokenType type) {
+        cancelOtherActiveTokens(userId, type, null);
+    }
+
+    @Transactional
+    public void cancelOtherActiveTokens(Long userId, TokenType type, String keepHash) {
         lockUser(userId);
         List<Token> tokens = tokenRepository.findActiveTokensByUserId(userId);
         for (Token token : tokens) {
-            if (token.getType() == type) {
+            if (token.getType() == type && !token.getDetails().getTokenHash().equals(keepHash)) {
                 token.getDetails().setConsumed(true);
                 tokenRepository.save(token);
             }
         }
+    }
+
+    /** Новый почтовый токен не отменяет доставленную ссылку до успешной отправки нового письма. */
+    @Transactional
+    public Token prepareEmailToken(Long userId, TokenType type) {
+        lockUser(userId);
+        Token token = type == TokenType.VERIFY
+                ? new VerifyToken(userId, VERIFY_TOKEN_TTL) : new ResetToken(userId, RESET_TOKEN_TTL);
+        return tokenRepository.save(token);
     }
 
     private void lockUser(Long userId) {

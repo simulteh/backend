@@ -11,21 +11,26 @@ import lombok.Data;
 public class SignUpRequest {
     @Schema(description = "Имя пользователя", example = "Иван")
     @NotBlank(message = "Имя обязательно")
+    @Size(max = 255)
     private String firstName;
 
     @Schema(description = "Фамилия пользователя", example = "Иванов")
     @NotBlank(message = "Фамилия обязательна")
+    @Size(max = 255)
     private String lastName;
 
     @Schema(description = "Отчество пользователя", example = "Иванович")
+    @Size(max = 255)
     private String middleName;
 
     @Schema(description = "Никнейм (не обязан быть уникальным)", example = "ivan")
+    @Size(max = 255)
     private String nickname;
 
     @Schema(description = "Почта пользователя", example = "ivanov@mail.ru")
     @NotBlank(message = "Email обязателен")
     @Email(message = "Некорректный формат email")
+    @Size(max = 255)
     private String email;
 
     @Schema(description = "Пароль для входа", example = "ivanov123")

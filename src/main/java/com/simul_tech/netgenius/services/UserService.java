@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MailSenderService mailSenderService;
+    private final MailOutboxService mailOutboxService;
     private final TokenService tokenService;
     private final RefreshTokenService refreshTokenService;
 
@@ -97,6 +97,9 @@ public class UserService {
         user.setEmail(newEmail);
         user.setEnabled(false);
         userRepository.save(user);
+        tokenService.cancelActiveTokens(userId, TokenType.RESET);
+        tokenService.cancelActiveTokens(userId, TokenType.VERIFY);
+        refreshTokenService.revokeAllForUser(userId);
         sendVerifyToken(newEmail);
         log.info("Email changed for user id {} -> {}", userId, newEmail);
     }
@@ -112,27 +115,15 @@ public class UserService {
     }
 
     public void sendVerifyToken(String email) {
-        User user = findByEmail(email);
-        String token = tokenService.createVerifyToken(user.getId());
-        // Доставка письма — побочный канал: её сбой не должен срывать регистрацию.
-        // Токен уже сохранён; пользователь сможет запросить повторную отправку.
-        try {
-            mailSenderService.sendCreationEmail(email, token, user.getFirstName());
-            log.info("Verification email sent to: {}", user.getEmail());
-        } catch (Exception e) {
-            log.error("Не удалось отправить письмо подтверждения на {}: {}", email, e.getMessage());
-        }
+        User user = userRepository.findByEmailForUpdate(email)
+                .orElseThrow(() -> new EmailNotFound("Почта не найдена"));
+        mailOutboxService.enqueue(user.getId(), email, TokenType.VERIFY);
     }
 
     public void sendResetToken(String email) {
-        User user = findByEmail(email);
-        String token = tokenService.createResetToken(user.getId());
-        try {
-            mailSenderService.sendPasswordResetEmail(email, token, user.getFirstName());
-            log.info("Reset email sent to: {}", user.getEmail());
-        } catch (Exception e) {
-            log.error("Не удалось отправить письмо сброса пароля на {}: {}", email, e.getMessage());
-        }
+        User user = userRepository.findByEmailForUpdate(email)
+                .orElseThrow(() -> new EmailNotFound("Почта не найдена"));
+        mailOutboxService.enqueue(user.getId(), email, TokenType.RESET);
     }
 
     public void confirmUser(String token) {
@@ -140,6 +131,7 @@ public class UserService {
         User user = findById(userId);
         user.setEnabled(true);
         userRepository.save(user);
+        tokenService.cancelActiveTokens(userId, TokenType.VERIFY);
         log.info("Successfully confirmed registration for user: {}", user.getEmail());
     }
 
@@ -148,6 +140,7 @@ public class UserService {
         User user = findById(userId);
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        tokenService.cancelActiveTokens(userId, TokenType.RESET);
         refreshTokenService.revokeAllForUser(userId);
         log.info("Password successfully reset for user: {}", user.getEmail());
     }

@@ -327,12 +327,16 @@ class CabinetApiTest {
     @ValueSource(strings = {"student", "teacher"})
     void roleVerificationStillWorksWithoutDocumentUrls(String type) throws Exception {
         User candidate = user(Role.USER);
-        Map<String, String> body = type.equals("teacher")
-                ? Map.of("fullName", "Фамилия Имя Отчество", "workplace", "Вуз")
-                : Map.of("fullName", "Фамилия Имя Отчество");
-        JsonNode request = read(mvc.perform(auth(post("/verification/" + type), candidate)
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(body)))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.status").value("PENDING")).andReturn());
+        JsonNode request;
+        if (type.equals("teacher")) {
+            mvc.perform(teacherRequest(candidate, pdf())).andExpect(status().isOk());
+            request = read(mvc.perform(auth(get("/verification/status"), candidate)).andReturn()).get(0);
+        } else {
+            request = read(mvc.perform(auth(post("/verification/student"), candidate)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(Map.of("fullName", "Фамилия Имя Отчество"))))
+                    .andExpect(status().isCreated()).andExpect(jsonPath("$.status").value("PENDING")).andReturn());
+        }
         mvc.perform(auth(get("/verification/status"), candidate))
                 .andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(request.path("id").asLong()));
         mvc.perform(auth(get("/profile/me"), candidate)).andExpect(jsonPath("$.role").value("USER"));
@@ -416,10 +420,15 @@ class CabinetApiTest {
         api.path("paths").properties().forEach(path -> path.getValue().properties().forEach(method -> {
             JsonNode documented = method.getValue().path("responses");
             Iterable<String> responseCodes = documented::fieldNames;
-            assertThat(responseCodes).as("Swagger must document success for %s %s", method.getKey(), path.getKey())
-                    .anyMatch(code -> code.startsWith("2"));
+            if (path.getKey().equals("/verification/teacher")) {
+                assertThat(method.getValue().path("deprecated").asBoolean()).isTrue();
+                assertThat(responseCodes).contains("400");
+            } else {
+                assertThat(responseCodes).as("Swagger must document success for %s %s", method.getKey(), path.getKey())
+                        .anyMatch(code -> code.startsWith("2"));
+            }
         }));
-        for (String path : List.of("/auth/register", "/groups", "/verification/student", "/verification/teacher",
+        for (String path : List.of("/auth/register", "/groups", "/verification/student",
                 "/teacher/groups", "/teacher/groups/{id}/invite", "/teacher/university-request",
                 "/admin/universities", "/admin/licenses/create", "/admin/licenses/batch")) {
             JsonNode created = api.path("paths").path(path).path("post").path("responses");

@@ -12,6 +12,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Table(name = "lab_attempts",
+        uniqueConstraints = @UniqueConstraint(name = "uk_attempt_event", columnNames = {"student_id", "event_key"}),
         indexes = {
                 @Index(name = "idx_attempts_student", columnList = "student_id"),
                 @Index(name = "idx_attempts_lab", columnList = "lab_id")
@@ -28,6 +29,13 @@ public class LabAttempt {
 
     @Column(name = "lab_id", nullable = false)
     private Long labId;
+
+    /** null у попыток, записанных до появления идемпотентной синхронизации. */
+    @Column(name = "event_key", length = 64)
+    private String eventKey;
+
+    @Column(name = "payload_hash", length = 64)
+    private String payloadHash;
 
     @Column(name = "started_at")
     private Instant startedAt;

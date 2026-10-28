@@ -3,6 +3,7 @@ package com.simul_tech.netgenius.dto.sync;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -13,9 +14,9 @@ import java.util.List;
 @Schema(description = "Запрос на синхронизацию прогресса")
 public record SyncProgressRequest(
         @Schema(description = "Идентификатор устройства/клиента", example = "desktop-win-1.2.0")
-        String deviceId,
+        @Size(max = 255) String deviceId,
 
         @Schema(description = "Накопленные события прогресса")
-        @NotNull @Valid List<SyncEventDto> events
+        @NotNull @Size(max = 1000) @Valid List<@NotNull SyncEventDto> events
 ) {
 }

@@ -51,8 +51,7 @@ public class VerificationService {
         currentUserService.requireEmailConfirmed();
         requireUserRole(user);
         requireNoPending(user.getId());
-        // Нельзя быть одновременно студентом и преподавателем.
-        if (teacherRepository.existsByUserId(user.getId())) {
+        if (teacherRepository.findByUserId(user.getId()).filter(Teacher::isVerified).isPresent()) {
             throw new ConflictException("Уже есть профиль преподавателя");
         }
 
@@ -80,12 +79,12 @@ public class VerificationService {
 
     /** Подача заявки на роль преподавателя. */
     public VerificationRequestResponse requestTeacher(TeacherVerificationRequest request) {
+        User user = userRepository.findByIdForUpdate(currentUserService.getCurrentUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
         currentUserService.requireEmailConfirmed();
-        User user = currentUserService.getCurrentUser();
         requireUserRole(user);
         requireNoPending(user.getId());
-        // Нельзя быть одновременно студентом и преподавателем.
-        if (studentRepository.existsByUserId(user.getId())) {
+        if (studentRepository.findByUserId(user.getId()).filter(Student::isVerified).isPresent()) {
             throw new ConflictException("Уже есть профиль студента");
         }
 
@@ -194,7 +193,12 @@ public class VerificationService {
     }
 
     private VerificationRequest getPendingRequest(Long requestId) {
-        VerificationRequest verification = verificationRequestRepository.findById(requestId)
+        Long userId = verificationRequestRepository.findUserIdById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена: " + requestId));
+        // Подача и рассмотрение сериализуются одной блокировкой владельца.
+        userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден: " + userId));
+        VerificationRequest verification = verificationRequestRepository.findByIdForUpdate(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Заявка не найдена: " + requestId));
         if (verification.getStatus() != VerificationStatus.PENDING) {
             throw new ConflictException("Заявка уже рассмотрена");
@@ -205,6 +209,7 @@ public class VerificationService {
     private void promoteUser(Long userId, Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден: " + userId));
+        requireUserRole(user);
         user.setRole(role);
         userRepository.save(user);
     }
