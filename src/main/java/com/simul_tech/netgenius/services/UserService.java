@@ -8,6 +8,7 @@ import com.simul_tech.netgenius.exceptions.UserNotFoundException;
 import com.simul_tech.netgenius.impls.TokenType;
 import com.simul_tech.netgenius.models.User;
 import com.simul_tech.netgenius.repositories.UserRepository;
+import com.simul_tech.netgenius.validation.RuEmailPolicy;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class UserService {
 
 
     public void signUpUser(SignUpRequest signUpRequest) throws InvalidRequestException {
+        RuEmailPolicy.requireAllowed(signUpRequest.getEmail());
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             throw new InvalidRequestException("Пользователь с таким email уже существует");
         }
@@ -84,6 +86,7 @@ public class UserService {
 
     /** Смена email: проверяется пароль, новый email сбрасывает подтверждение и шлёт письмо. */
     public void updateEmail(Long userId, String newEmail, String password) {
+        RuEmailPolicy.requireAllowed(newEmail);
         User user = findByIdForUpdate(userId);
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new InvalidRequestException("Пароль неверен");

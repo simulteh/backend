@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import com.simul_tech.netgenius.validation.RuEmailPolicy;
 import lombok.Data;
 
 @Data
@@ -27,9 +29,10 @@ public class SignUpRequest {
     @Size(max = 255)
     private String nickname;
 
-    @Schema(description = "Почта пользователя", example = "ivanov@mail.ru")
+    @Schema(description = "Почта пользователя: домен должен оканчиваться на .ru (без учёта регистра)", example = "ivanov@mail.ru")
     @NotBlank(message = "Email обязателен")
     @Email(message = "Некорректный формат email")
+    @Pattern(regexp = RuEmailPolicy.REGEXP, message = RuEmailPolicy.MESSAGE)
     @Size(max = 255)
     private String email;
 
