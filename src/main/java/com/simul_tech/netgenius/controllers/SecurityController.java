@@ -45,10 +45,11 @@ public class SecurityController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Регистрация нового пользователя (роль USER, требуется подтверждение email)")
+    @Operation(summary = "Регистрация нового пользователя (роль USER, требуется подтверждение email)",
+            description = "Новые аккаунты регистрируются только с email, домен которого оканчивается на .ru. Регистр букв домена не учитывается; поддомены разрешены.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Пользователь зарегистрирован; роль USER"),
-            @ApiResponse(responseCode = "400", description = "Некорректные поля или email уже зарегистрирован", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "400", description = "Некорректные поля, домен email не .ru или email уже зарегистрирован", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<MessageResponse> register(@Valid @RequestBody SignUpRequest request) {
         userService.signUpUser(request);

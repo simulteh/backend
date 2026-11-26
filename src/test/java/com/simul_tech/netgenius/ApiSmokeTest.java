@@ -43,7 +43,7 @@ class ApiSmokeTest {
 
     @Test
     void register_login_me_flow() throws Exception {
-        String email = "user1@example.com";
+        String email = "user1@example.ru";
         register(email, "secret123");
 
         String token = login(email, "secret123");
@@ -62,8 +62,8 @@ class ApiSmokeTest {
                 .andExpect(status().isUnauthorized());
 
         // Токен обычного пользователя -> 403
-        register("user2@example.com", "secret123");
-        String userToken = login("user2@example.com", "secret123");
+        register("user2@example.ru", "secret123");
+        String userToken = login("user2@example.ru", "secret123");
         mockMvc.perform(get("/admin/licenses").header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isForbidden());
 
@@ -81,8 +81,8 @@ class ApiSmokeTest {
 
     @Test
     void teacherEndpoint_forbidsPlainUser() throws Exception {
-        register("user3@example.com", "secret123");
-        String userToken = login("user3@example.com", "secret123");
+        register("user3@example.ru", "secret123");
+        String userToken = login("user3@example.ru", "secret123");
         mockMvc.perform(get("/teacher/groups").header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isForbidden());
     }

@@ -3,6 +3,8 @@ package com.simul_tech.netgenius;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simul_tech.netgenius.enums.*;
+import com.simul_tech.netgenius.dto.SignUpRequest;
+import com.simul_tech.netgenius.exceptions.InvalidRequestException;
 import com.simul_tech.netgenius.impls.TokenType;
 import com.simul_tech.netgenius.impls.UserDetailsImpl;
 import com.simul_tech.netgenius.models.*;
@@ -37,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -80,6 +83,134 @@ class BackendAuditFixTest {
         when(mail.createMimeMessage()).thenAnswer(x -> new MimeMessage(Session.getInstance(new Properties())));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"mail.ru", "sub.university.edu.ru", "EXAMPLE.RU"})
+    void bothRegistrationRoutesAcceptRuDomainsAndSendConfirmation(String domain) throws Exception {
+        for (String path : List.of("/auth/register", "/auth/sign-up")) {
+            String email = UUID.randomUUID() + "@" + domain;
+            mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(
+                            Map.of("firstName", "Audit", "lastName", "User", "email", email, "password", PASSWORD))))
+                    .andExpect(status().is(path.equals("/auth/register") ? 201 : 200));
+            User created = users.findByEmail(email).orElseThrow();
+            assertThat(created.getRole()).isEqualTo(Role.USER);
+            assertThat(created.isEnabled()).isFalse();
+            assertThat(entry(created, TokenType.VERIFY).getStatus()).isEqualTo(MailOutbox.Status.SENT);
+            assertThat(entry(created, TokenType.VERIFY).getRecipient()).isEqualTo(email);
+        }
+        verify(mail, times(2)).send(any(MimeMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"example.com", "example.рф", "mail.ru.com", "ru", "example.ru.evil", "example.ru\n", "example.ru\r\n"})
+    void bothRegistrationRoutesRejectOtherDomainsWithoutSavingOrEmailing(String domain) throws Exception {
+        long usersBefore = users.count();
+        long tokensBefore = tokenRepository.count();
+        long outboxBefore = outbox.count();
+        for (String path : List.of("/auth/register", "/auth/sign-up")) {
+            String email = UUID.randomUUID() + "@" + domain;
+            mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(
+                            Map.of("firstName", "Audit", "lastName", "User", "email", email, "password", PASSWORD))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Разрешена почта только с доменом .ru")));
+            assertThat(users.findByEmail(email)).isEmpty();
+            assertThat(users.count()).isEqualTo(usersBefore);
+            assertThat(tokenRepository.count()).isEqualTo(tokensBefore);
+            assertThat(outbox.count()).isEqualTo(outboxBefore);
+        }
+        verify(mail, never()).send(any(MimeMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"example.com", "example.рф", "mail.ru.com", "ru", "example.ru.evil", "example.ru\n", "example.ru\r\n"})
+    void emailChangeRejectsOtherDomainsWithoutChangingAccountOrRevokingExistingLinks(String domain) throws Exception {
+        User candidate = user(Role.USER);
+        String originalEmail = candidate.getEmail();
+        String reset = tokens.createResetToken(candidate.getId());
+        long outboxBefore = outbox.count();
+        long tokensBefore = tokenRepository.count();
+        mvc.perform(json(put("/users/email"), candidate,
+                        Map.of("newEmail", UUID.randomUUID() + "@" + domain, "password", PASSWORD)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Разрешена почта только с доменом .ru")));
+        User unchanged = users.findById(candidate.getId()).orElseThrow();
+        assertThat(unchanged.getEmail()).isEqualTo(originalEmail);
+        assertThat(unchanged.isEnabled()).isTrue();
+        assertThat(tokenRepository.count()).isEqualTo(tokensBefore);
+        assertThat(outbox.count()).isEqualTo(outboxBefore);
+        assertThat(tokenRepository.findActiveTokensByUserId(candidate.getId()))
+                .anyMatch(token -> token.getDetails().getTokenHash().equals(Token.hash(reset)));
+        verify(mail, never()).send(any(MimeMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"mail.ru", "sub.university.edu.ru", "EXAMPLE.RU"})
+    void emailChangeAcceptsRuDomainsAndSendsConfirmation(String domain) throws Exception {
+        User candidate = user(Role.USER);
+        String email = UUID.randomUUID() + "@" + domain;
+        mvc.perform(json(put("/users/email"), candidate, Map.of("newEmail", email, "password", PASSWORD)))
+                .andExpect(status().isOk());
+        User updated = users.findById(candidate.getId()).orElseThrow();
+        assertThat(updated.getEmail()).isEqualTo(email);
+        assertThat(updated.isEnabled()).isFalse();
+        assertThat(entry(updated, TokenType.VERIFY).getStatus()).isEqualTo(MailOutbox.Status.SENT);
+        assertThat(entry(updated, TokenType.VERIFY).getRecipient()).isEqualTo(email);
+        verify(mail).send(any(MimeMessage.class));
+    }
+
+    @Test void existingNonRuAccountCanStillLoginAndRequestResetAndConfirmation() throws Exception {
+        User existing = user(Role.USER);
+        existing.setEmail(UUID.randomUUID() + "@example.com");
+        existing.setEnabled(false);
+        users.save(existing);
+        for (String path : List.of("/auth/login", "/auth/sign-in")) {
+            mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(
+                            Map.of("email", existing.getEmail(), "password", PASSWORD))))
+                    .andExpect(status().isOk());
+        }
+        forgot(existing);
+        mvc.perform(post("/auth/resend-confirmation").contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(Map.of("email", existing.getEmail()))))
+                .andExpect(status().isOk());
+        assertThat(entry(existing, TokenType.RESET).getStatus()).isEqualTo(MailOutbox.Status.SENT);
+        assertThat(entry(existing, TokenType.VERIFY).getStatus()).isEqualTo(MailOutbox.Status.SENT);
+        verify(mail, times(2)).send(any(MimeMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"example.com", "example.ru\n", "example.ru\r\n"})
+    void directAccountServiceCallsCannotBypassRuDomainPolicy(String domain) {
+        SignUpRequest registration = new SignUpRequest();
+        registration.setFirstName("Audit"); registration.setLastName("User");
+        registration.setEmail(UUID.randomUUID() + "@" + domain); registration.setPassword(PASSWORD);
+        long usersBefore = users.count();
+        assertThatThrownBy(() -> userService.signUpUser(registration))
+                .isInstanceOf(InvalidRequestException.class).hasMessage("Разрешена почта только с доменом .ru");
+        assertThat(users.count()).isEqualTo(usersBefore);
+        User existing = user(Role.USER);
+        assertThatThrownBy(() -> userService.updateEmail(existing.getId(), registration.getEmail(), PASSWORD))
+                .isInstanceOf(InvalidRequestException.class).hasMessage("Разрешена почта только с доменом .ru");
+        assertThat(users.findById(existing.getId()).orElseThrow().getEmail()).isEqualTo(existing.getEmail());
+        assertThat(outbox.findAll().stream().filter(mail -> mail.getUserId().equals(existing.getId()))).isEmpty();
+        verify(mail, never()).send(any(MimeMessage.class));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"no-at-symbol.ru", "user@.ru"})
+    void ruSuffixDoesNotBypassEmailFormatValidation(String email) throws Exception {
+        long usersBefore = users.count();
+        long tokensBefore = tokenRepository.count();
+        long outboxBefore = outbox.count();
+        for (String path : List.of("/auth/register", "/auth/sign-up")) {
+            mvc.perform(post(path).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(
+                            Map.of("firstName", "Audit", "lastName", "User", "email", email, "password", PASSWORD))))
+                    .andExpect(status().isBadRequest());
+            assertThat(users.count()).isEqualTo(usersBefore);
+            assertThat(tokenRepository.count()).isEqualTo(tokensBefore);
+            assertThat(outbox.count()).isEqualTo(outboxBefore);
+        }
+        verify(mail, never()).send(any(MimeMessage.class));
+    }
+
     @Test void oldTeacherJsonDoesNotCreatePendingOrBlockDocumentSubmission() throws Exception {
         User candidate = user(Role.USER);
         mvc.perform(json(post("/verification/teacher"), candidate, Map.of("fullName", "Audit Teacher")))
@@ -98,7 +229,7 @@ class BackendAuditFixTest {
         String refresh = read(mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(Map.of("email", candidate.getEmail(), "password", PASSWORD))))
                 .andReturn()).path("refreshToken").asText();
-        String newEmail = UUID.randomUUID() + "@example.test";
+        String newEmail = UUID.randomUUID() + "@example.ru";
         mvc.perform(json(put("/users/email"), candidate, Map.of("newEmail", newEmail, "password", PASSWORD)))
                 .andExpect(status().isOk());
         mvc.perform(post("/auth/reset-password").contentType(MediaType.APPLICATION_JSON)
@@ -147,7 +278,7 @@ class BackendAuditFixTest {
 
     @Test void registrationSurvivesSmtpFailureAndConfirmationIsRetried() throws Exception {
         failMail();
-        String email = UUID.randomUUID() + "@example.test";
+        String email = UUID.randomUUID() + "@example.ru";
         mvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(
                 Map.of("firstName", "Audit", "lastName", "User", "email", email, "password", PASSWORD))))
                 .andExpect(status().isCreated());
@@ -179,7 +310,7 @@ class BackendAuditFixTest {
         failMail(); forgot(candidate);
         MailOutbox entry = entry(candidate, TokenType.RESET);
         mvc.perform(json(put("/users/email"), candidate,
-                Map.of("newEmail", UUID.randomUUID() + "@example.test", "password", PASSWORD)))
+                Map.of("newEmail", UUID.randomUUID() + "@example.ru", "password", PASSWORD)))
                 .andExpect(status().isOk());
         due(entry);
         mailOutbox.deliver(entry.getId());

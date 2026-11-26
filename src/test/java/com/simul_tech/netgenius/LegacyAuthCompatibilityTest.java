@@ -55,7 +55,7 @@ class LegacyAuthCompatibilityTest {
 
     @Test
     void legacyRegistrationAndLoginPreserveStringResponsesAndCurrentTokenSecurity() throws Exception {
-        String email = UUID.randomUUID() + "@example.test";
+        String email = UUID.randomUUID() + "@example.ru";
         String registration = mapper.writeValueAsString(Map.of(
                 "email", email, "password", PASSWORD, "firstName", "Тест", "lastName", "Тестов"));
         mvc.perform(post("/auth/sign-up").contentType(MediaType.APPLICATION_JSON).content(registration))

@@ -90,7 +90,7 @@ class AuthSecurityTest {
         User original = createUser(Role.USER);
         String oldEmail = original.getEmail();
         String accessToken = accessToken(original);
-        String newEmail = "new-" + oldEmail;
+        String newEmail = UUID.randomUUID() + "@example.ru";
 
         mvc.perform(put("/users/email").header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
